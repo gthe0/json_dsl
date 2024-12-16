@@ -26,6 +26,7 @@ set_target_properties(
     json_dsl 
     PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin
+    CXX_STANDARD 11
 )
 
 # Create the bin directory if it does not exist

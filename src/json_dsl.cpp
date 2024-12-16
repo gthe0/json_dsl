@@ -1,4 +1,4 @@
-#include "../include/json_dsl.hpp"
+#include <json_dsl.hpp>
 
 std::list<JSON> JSON::jsonList;
 
