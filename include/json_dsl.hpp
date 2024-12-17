@@ -1,44 +1,48 @@
-#include <iostream>
-#include <list>
+#ifndef JSON_DSL_HPP
+#define JSON_DSL_HPP
+
 #include <string>
 
-#define STRING(x) #x;
-#define INTEGER(x) x;
-#define TRUE true;
-#define FALSE false;
-//#define NULL null;
+#define PROGRAM_BEGIN int main(void) {
+#define PROGRAM_END \
+    return 0; }
 
-#define concat(x, y) x##y
 
-#define JSON(name) JSON json; json(#name);
-
-class JSON {
-private:
-    std::string name;
-    std::string sval;
-    int ival;
-    double dval;
-    bool bval;
-    typedef struct object {
-        int ival;
-        double dval;
-        std::string sval;
-    }oval;
-    std::list<JSON> array;
-
+// Define a common interface for all Objects
+class JsonVariable {
 public:
-    static std::list<JSON> jsonList;
+    virtual             ~JsonVariable() = default;
+    virtual std::string typeOf()        = 0;
 
-    void display() const {
-        std::cout << name << "\n";
-    }
-
-    void operator()(std::string name) {
-        JSON json;
-        json.name = name;
-        jsonList.emplace_back(json);
-    }
-
-    
+    // Mostly the same in all of the derived classes
+    virtual bool        isEmpty()       { return 1; }
+    virtual int         sizeOf()        { return 1; }
+    virtual bool        hasKey()        { return false; }
 };
 
+class JsonString : public JsonVariable {
+public:
+private:
+};
+
+class JsonNumber : public JsonVariable {
+public:
+private:
+};
+
+class JsonBoolean : public JsonVariable {
+public:
+private:
+};
+
+class JsonObject : public JsonVariable {
+public:
+private:
+};
+
+class JsonArray : public JsonVariable {
+public:
+private:
+};
+
+#endif // json_dsl lib
