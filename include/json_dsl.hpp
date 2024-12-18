@@ -9,6 +9,12 @@
 #define PROGRAM_END \
     return 0; }
 
+#define JSON(var)   JsonVariable var
+#define STRING(var) new JsonString(var);
+#define NUMBER(var) new JsonNumber(var);
+
+#define TRUE        true
+#define FALSE       false
 
 // Define a common interface for all Objects
 class JsonVariable {
@@ -24,6 +30,8 @@ public:
 
 class JsonString : public JsonVariable {
 public:
+    // Constructors
+    JsonString(std::string value): value_(value){}    
     std::string typeOf() const { return "string";}
 private:
     std::string value_;
@@ -31,6 +39,8 @@ private:
 
 class JsonNumber : public JsonVariable {
 public:
+    // Constructors
+    JsonNumber(double value): value_(value){}    
     std::string typeOf() const { return "number";}
 private:
     double value_;
@@ -38,6 +48,8 @@ private:
 
 class JsonBoolean : public JsonVariable {
 public:
+    // Constructors
+    JsonBoolean(bool value): value_(value){}    
     std::string typeOf() const { return "boolean";}
 private:
     bool value_;
