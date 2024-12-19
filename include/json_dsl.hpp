@@ -19,44 +19,70 @@
 
 #define JSON(name) ; Json name; name(#name)
 
+class Object;
+
 class Key {
 public:
-    std::string key;
-    int ival = 0;
-    std::string sval;
+    enum class Type { Null, Int, String, Double, Object };     
+    Type type = Type::Null;
 
+    std::string key;
+    int ival;
+    std::string sval; 
+    double dval;
+    Object* oval;
+
+    Key() {}
     Key(std::string k) : key(k) {}
 
     Key& operator=(int arg) {
         ival = arg;
+        type = Type::Int;
         return *this;
     }
 
     Key& operator=(std::string arg) {
         sval = arg;
+        type = Type::String;
+        return *this;
+    }
+
+    Key& operator=(double arg) {
+        dval = arg;
+        type = Type::Double;
+        return *this;
+    }
+
+    Key& operator=(Object* arg) {
+        oval = arg;
+        type = Type::Object;
         return *this;
     }
 };
 
 class Object {
 private:
-    std::map<std::string, void*> mp;
+    std::map<std::string, Key> mp;
 
 public:
+    Object() {}
     Object(std::initializer_list<Key> args) {
         for (const auto& arg : args) {
-            if(arg.ival != 0)
-                std::cout << arg.key << " " << arg.ival << std::endl;
-            else if(!arg.sval.empty())
-                std::cout << arg.key << " " << arg.sval << std::endl;
+            switch(arg.type) {
+                case Key::Type::Int:
+                    mp[arg.key] = arg.ival;
+                    break;
+                case Key::Type::String:
+                    mp[arg.key] = arg.sval;
+                    break;
+                case Key::Type::Double:
+                    mp[arg.key] = arg.dval;
+                    break;
+            }
         }
     }
-};
 
-struct ObjectBuilder {
-    void operator=(std::initializer_list<Key> args) {
-        Object obj(args);
-    }
+    std::map<std::string, Key> getMap() {return mp;}
 };
 
 class Json {
@@ -66,7 +92,7 @@ private:
     int ival;
     double dval;
     bool bval;
-    Object oval();
+    Object oval;
     std::list<Json> array;
 
 public:
@@ -104,8 +130,7 @@ public:
     }
 
     Json& operator=(Object arg) {
-        //std::cout <<  << std::endl;
-        //jsonList.back().oval() = arg;
+        jsonList.back().oval = arg;    
         return *this;
     }
 };
