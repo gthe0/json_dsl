@@ -10,8 +10,12 @@
     return 0; }
 
 #define JSON(var)   JsonVariable var
-#define STRING(var) new JsonString(var);
-#define NUMBER(var) new JsonNumber(var);
+#define STRING(var) JsonString(var);
+#define NUMBER(var) JsonNumber(var);
+
+// Undef NULL whose default value is (void*)0x0
+#undef  NULL
+#define NULL        JsonNull();
 
 #define TRUE        true
 #define FALSE       false
@@ -20,7 +24,7 @@
 class JsonVariable {
 public:
     virtual             ~JsonVariable() = default;
-    virtual std::string typeOf() const  = 0;
+    virtual std::string typeOf() const  = 0;  
 
     // Mostly the same in all of the derived classes
     virtual bool        isEmpty() const { return 1; }
@@ -72,7 +76,6 @@ private:
 class JsonNull : public JsonVariable {
 public:
     std::string typeOf() const { return "null";}
-private:
 };
 
 
