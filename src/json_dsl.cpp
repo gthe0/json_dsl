@@ -8,7 +8,13 @@ PROGRAM_BEGIN
     JSON(test) = OBJECT{ 
         KEY(test1):NUMBER(10), 
         KEY(test2):STRING("test"),
-        KEY(test3):TRUE
+        KEY(test3):OBJECT{
+                KEY(obj1):NUMBER(5),
+                KEY(obj2):TRUE
+            }
         }
+
+    ;Json json
+    ;json.display()
 
 PROGRAM_END

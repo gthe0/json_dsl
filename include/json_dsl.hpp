@@ -13,16 +13,15 @@
 #define TRUE true
 #define FALSE false
 #define OBJECT Object
-#define KEY(name) Key(#name)=(0>1)?0
+#define KEY(name) Object(#name)=(0>1)?0
 
 #define concat(x, y) x##y
 
 #define JSON(name) ; Json name; name(#name)
 
-class Object;
 
-class Key {
-public:
+class Object {
+private:
     enum class Type { Null, Int, String, Double, Object };     
     Type type = Type::Null;
 
@@ -32,57 +31,65 @@ public:
     double dval;
     Object* oval;
 
-    Key() {}
-    Key(std::string k) : key(k) {}
-
-    Key& operator=(int arg) {
-        ival = arg;
-        type = Type::Int;
-        return *this;
-    }
-
-    Key& operator=(std::string arg) {
-        sval = arg;
-        type = Type::String;
-        return *this;
-    }
-
-    Key& operator=(double arg) {
-        dval = arg;
-        type = Type::Double;
-        return *this;
-    }
-
-    Key& operator=(Object* arg) {
-        oval = arg;
-        type = Type::Object;
-        return *this;
-    }
-};
-
-class Object {
-private:
-    std::map<std::string, Key> mp;
+    std::map<std::string, Object> mp;
 
 public:
     Object() {}
-    Object(std::initializer_list<Key> args) {
+    Object(int val) : ival(val) {}
+    Object(std::string k) : key(k) {}
+
+    Object(std::initializer_list<Object> args) {
         for (const auto& arg : args) {
             switch(arg.type) {
-                case Key::Type::Int:
+                case Type::Int:
+                    std::cout << arg.ival << std::endl;
                     mp[arg.key] = arg.ival;
                     break;
-                case Key::Type::String:
+                case Type::String:
                     mp[arg.key] = arg.sval;
                     break;
-                case Key::Type::Double:
+                case Type::Double:
                     mp[arg.key] = arg.dval;
+                    break;
+                case Type::Object:
+                    mp[arg.key] = arg.oval; 
+                    break;
+                default:
+                    mp[arg.key] = nullptr;
                     break;
             }
         }
     }
 
-    std::map<std::string, Key> getMap() {return mp;}
+    operator int() const {
+        return ival;
+    }
+
+    Object& operator=(int arg) {
+        ival = arg;
+        type = Type::Int;
+        return *this;
+    }
+
+    Object& operator=(std::string arg) {
+        sval = arg;
+        type = Type::String;
+        return *this;
+    }
+
+    Object& operator=(double arg) {
+        dval = arg;
+        type = Type::Double;
+        return *this;
+    }
+
+    Object& operator=(Object* arg) {
+        oval = arg;
+        type = Type::Object;
+        return *this;
+    }
+
+    std::map<std::string, Object> getMap() {return mp;}
 };
 
 class Json {
@@ -99,7 +106,9 @@ public:
     static std::list<Json> jsonList;
 
     void display() const {
-        std::cout << jsonList.back().name << std::endl;
+        for (auto const& i : jsonList.back().oval.getMap()) {
+        std::cout << i.first << std::endl;
+        }
     }
 
     Json& operator()(std::string name) {
