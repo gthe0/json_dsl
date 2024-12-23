@@ -78,6 +78,13 @@ private:
     bool value_;
 };
 
+
+class JsonNull : public JsonVariable {
+public:
+    std::string typeOf()        const { return "null";}
+    std::string valueToString() const { return "null";}
+};
+
 class JsonObject : public JsonVariable {
 public:
     std::string typeOf() const { return "object";}
@@ -90,12 +97,6 @@ public:
     std::string typeOf() const { return "array";}
 private:
     std::vector<JsonVariable> array_;
-};
-
-class JsonNull : public JsonVariable {
-public:
-    std::string typeOf()        const { return "null";}
-    std::string valueToString() const { return "null";}
 };
 
 
