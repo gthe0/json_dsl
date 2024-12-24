@@ -1,9 +1,13 @@
 #include <json_dsl.hpp>
+#include <iostream>
 
 PROGRAM_BEGIN
-    JSON(obj1) = STRING("hello")
-    JSON(obj2) = NULL
-    JSON(obj3) = TRUE
-    JSON(obj4) = FALSE
-    JSON(obj5) = NUMBER(3.324);
+    JSON(obj7) = OBJECT {
+        KEY(key)  : STRING("Hello"),
+        KEY(key1) : STRING("WORLD"),
+        KEY(key2) : OBJECT{ KEY(key1):NUMBER(1)}
+    };
+    
+    std::cout << "Hello worlddddd" << obj7->toString() << std::endl; 
+
 PROGRAM_END

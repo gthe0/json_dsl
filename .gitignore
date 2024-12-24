@@ -2,7 +2,8 @@
 build
 bin
 
-# Ignore vscode made stuff
+# Ignore vs made stuff
+.vs
 .vscode
 
 # Ignore misc and exe files
