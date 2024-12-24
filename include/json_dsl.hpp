@@ -1,31 +1,32 @@
 #ifndef JSON_DSL_HPP
 #define JSON_DSL_HPP
 
+#include <list>
 #include <vector>
 #include <string>
+
+namespace jsonlang{
 
 #define PROGRAM_BEGIN int main(void) {
 #define PROGRAM_END \
     ;return 0; }
 
-#define JSON(var)   ;JsonVariable* var
+#define JSON(var)   ;jsonlang::JsonVariable* var
 
 // Variable Values
-#define STRING(var) new JsonString(var)
-#define NUMBER(var) new JsonNumber(var)
-#define KEY(var)    JsonKey(#var) = 0 ? 0
-#define TRUE        new JsonBoolean(true)
-#define FALSE       new JsonBoolean(false)
-#define OBJECT      new JsonObject
+#define STRING(var) new jsonlang::JsonString(var)
+#define NUMBER(var) new jsonlang::JsonNumber(var)
+#define KEY(var)    jsonlang::JsonKey(#var) = 0 ? 0
+#define TRUE        new jsonlang::JsonBoolean(true)
+#define FALSE       new jsonlang::JsonBoolean(false)
+#define OBJECT      new jsonlang::JsonObject
+#define ARRAY       &jsonlang::JsonArray()
 
 // Macros that call members
-#define HAS_KEY (var,key)   new JsonBoolean(var->hasKey(key))
-#define IS_EMPTY(var)       new JsonBoolean(var->isEmpty())
+#define HAS_KEY (var,key)   new jsonlang::JsonBoolean(var->hasKey(key))
+#define IS_EMPTY(var)       new jsonlang::JsonBoolean(var->isEmpty())
 #define SIZE_OF (var)       NUMBER(var->sizeOf())
 #define TYPE_OF (var)       STRING(var->typeOf())
-
-//Forward declarations 
-class JsonCollection;
 
 // Define a common interface for all Objects
 class JsonVariable {
@@ -60,21 +61,6 @@ public:
 
     JsonVariable*   var_;
     std::string     key_;
-};
-
-class JsonCollection {
-public:
-    // Destructor
-    ~JsonCollection() { for (auto& json_val : collection_) delete json_val; }    
-
-    // Collection to get printed
-    JsonCollection& operator,(JsonVariable* var)
-    {
-        collection_.push_back(var);
-        return *this;
-    }
-
-    std::vector<JsonVariable*> collection_;
 };
 
 class JsonString : public JsonVariable {
@@ -175,9 +161,10 @@ public:
         for(auto ptr: array_) delete ptr;
     }
 
-    // Move the collection in the array
-    JsonArray& operator[](JsonCollection collection) {
-        array_ = std::move(collection.collection_);
+    // Push each element in the json variable list in the array_
+    template <typename... Args>
+    JsonArray &operator[](Args*... args) {
+        addElements({args...});
         return *this;
     }
 
@@ -197,7 +184,42 @@ public:
     int         sizeOf() const override { return array_.size();}
     std::string typeOf() const override { return "array";}
 private:
+    // Helper function to add elements
+    void addElements(const std::initializer_list<JsonVariable *> &elements) {
+        for (const auto &element : elements) {
+            array_.push_back(element);
+        }
+    }
+
     std::vector<JsonVariable*> array_;
 };
+
+// Create a JsonList
+inline std::list<JsonVariable*> operator,(JsonVariable& a, JsonVariable& b)
+{
+    std::list<JsonVariable*> json_list{};
+
+    json_list.push_back(&a);
+    json_list.push_back(&b);
+
+    return json_list;
+}
+
+
+// Prepend JsonList
+inline std::list<JsonVariable*> operator,(JsonVariable* a, std::list<JsonVariable*>& b)
+{
+    b.push_front(a);
+    return (std::move(b));
+}
+
+// Append JsonList
+inline std::list<JsonVariable*> operator,(std::list<JsonVariable*>& b,JsonVariable* a)
+{
+    b.push_back(a);
+    return (std::move(b));
+}
+
+}
 
 #endif // json_dsl lib
