@@ -13,20 +13,20 @@ namespace jsonlang{
 
 #define JSON(var)   ;jsonlang::JsonVariable* var
 
+#define KEY(var)    jsonlang::JsonKey(#var) = 0 ? 0
+
 // Variable Values
 #define STRING(var) new jsonlang::JsonString(var)
 #define NUMBER(var) new jsonlang::JsonNumber(var)
-#define KEY(var)    jsonlang::JsonKey(#var) = 0 ? 0
 #define TRUE        new jsonlang::JsonBoolean(true)
 #define FALSE       new jsonlang::JsonBoolean(false)
 #define OBJECT      new jsonlang::JsonObject
-#define ARRAY       &jsonlang::JsonArray()
 
 // Macros that call members
-#define HAS_KEY (var,key)   new jsonlang::JsonBoolean(var->hasKey(key))
-#define IS_EMPTY(var)       new jsonlang::JsonBoolean(var->isEmpty())
-#define SIZE_OF (var)       NUMBER(var->sizeOf())
-#define TYPE_OF (var)       STRING(var->typeOf())
+#define HAS_KEY (var,key)   var == NULL ? new jsonlang::JsonBoolean(false) :new jsonlang::JsonBoolean(var->hasKey(key))
+#define IS_EMPTY(var)       var == NULL ? new jsonlang::JsonBoolean(false) :new jsonlang::JsonBoolean(var->isEmpty())
+#define SIZE_OF (var)       var == NULL ? NUMBER(1)      :NUMBER(var->sizeOf())
+#define TYPE_OF (var)       var == NULL ? STRING("null") :STRING(var->typeOf())
 
 // Define a common interface for all Objects
 class JsonVariable {
@@ -34,7 +34,7 @@ public:
     virtual             ~JsonVariable() = 0;
 
     // They are different in every class
-    virtual std::string typeOf()                 const {return "";}  
+    virtual std::string typeOf()                 const {return "";}
     virtual std::string toString()               const {return "";}
 
     // Mostly the same in all of the derived classes
@@ -161,13 +161,6 @@ public:
         for(auto ptr: array_) delete ptr;
     }
 
-    // Push each element in the json variable list in the array_
-    template <typename... Args>
-    JsonArray &operator[](Args*... args) {
-        addElements({args...});
-        return *this;
-    }
-
     // Implement toString to display the array
     std::string toString() const override {
         std::string result = "[ ";
@@ -184,13 +177,6 @@ public:
     int         sizeOf() const override { return array_.size();}
     std::string typeOf() const override { return "array";}
 private:
-    // Helper function to add elements
-    void addElements(const std::initializer_list<JsonVariable *> &elements) {
-        for (const auto &element : elements) {
-            array_.push_back(element);
-        }
-    }
-
     std::vector<JsonVariable*> array_;
 };
 
