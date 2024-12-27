@@ -1,146 +1,225 @@
-#include <iostream>
+#ifndef JSON_DSL_HPP
+#define JSON_DSL_HPP
+
 #include <list>
-#include <string>
 #include <vector>
-#include <stdarg.h>
-#include <map>
+#include <string>
 
-#define PROGRAM_BEGIN int main() { 
-#define PROGRAM_END ; return 0;}
+namespace jsonlang{
 
-#define STRING(x) x
-#define NUMBER(x) x
-#define TRUE true
-#define FALSE false
-#define OBJECT Object
-#define KEY(name) Object(#name)=(0>1)?0
+#define PROGRAM_BEGIN int main(void) {
+#define PROGRAM_END \
+    ;return 0; }
 
-#define concat(x, y) x##y
+#define JSON(var)   ;jsonlang::JsonVariable* var
 
-#define JSON(name) ; Json name; name(#name)
+// Variable Values
+#define STRING(var) new jsonlang::JsonString(var)
+#define NUMBER(var) new jsonlang::JsonNumber(var)
+#define KEY(var)    jsonlang::JsonKey(#var) = 0 ? 0
+#define TRUE        new jsonlang::JsonBoolean(true)
+#define FALSE       new jsonlang::JsonBoolean(false)
+#define OBJECT      new jsonlang::JsonObject
+#define ARRAY       &jsonlang::JsonArray()
 
+// Macros that call members
+#define HAS_KEY (var,key)   new jsonlang::JsonBoolean(var->hasKey(key))
+#define IS_EMPTY(var)       new jsonlang::JsonBoolean(var->isEmpty())
+#define SIZE_OF (var)       NUMBER(var->sizeOf())
+#define TYPE_OF (var)       STRING(var->typeOf())
 
-class Object {
-private:
-    enum class Type { Null, Int, String, Double, Object };     
-    Type type = Type::Null;
-
-    std::string key;
-    int ival;
-    std::string sval; 
-    double dval;
-    Object* oval;
-
-    std::map<std::string, Object> mp;
-
+// Define a common interface for all Objects
+class JsonVariable {
 public:
-    Object() {}
-    Object(int val) : ival(val) {}
-    Object(std::string k) : key(k) {}
+    virtual             ~JsonVariable() = 0;
 
-    Object(std::initializer_list<Object> args) {
-        for (const auto& arg : args) {
-            switch(arg.type) {
-                case Type::Int:
-                    std::cout << arg.ival << std::endl;
-                    mp[arg.key] = arg.ival;
+    // They are different in every class
+    virtual std::string typeOf()                 const {return "";}  
+    virtual std::string toString()               const {return "";}
+
+    // Mostly the same in all of the derived classes
+    virtual int         sizeOf()                 const { return 1; }
+    virtual bool        isEmpty()                const { return false; }
+    virtual bool        hasKey(std::string key)  const { return false; }
+
+};
+
+// Destructor Declaration
+inline JsonVariable::~JsonVariable(){}
+
+// JsonKey is Used only in the object construction
+class JsonKey {
+public:
+     JsonKey(std::string key): key_(key) {}
+     
+    // Used for the object construction
+    JsonKey& operator=(JsonVariable* var)
+    {
+        var_ = var;
+        return *this;
+    }
+
+    JsonVariable*   var_;
+    std::string     key_;
+};
+
+class JsonString : public JsonVariable {
+public:
+    // Constructors
+    JsonString(std::string value): value_(value){}    
+
+    // String Specific functions
+    std::string typeOf()        const override { return "string";}
+    std::string toString()      const override { return value_;}
+private:
+    std::string value_;
+};
+
+class JsonNumber : public JsonVariable {
+public:
+    // Constructors
+    JsonNumber(double value): value_(value){}    
+
+    // Number Specific functions
+    std::string typeOf()        const override { return "number";}
+    std::string toString()      const override { return std::to_string(value_);}
+private:
+    double value_;
+};
+
+class JsonBoolean : public JsonVariable {
+public:
+
+    // Destructors
+    ~JsonBoolean() = default;
+
+    // Constructors
+    JsonBoolean(bool value): value_(value){}    
+
+    // Boolean Specific functions
+    std::string typeOf()        const override { return "boolean";}
+    std::string toString()      const override { return std::to_string(value_);}
+private:
+    bool value_;
+};
+
+class JsonObject : public JsonVariable {
+public:
+    // Destructor
+    ~JsonObject() = default; 
+    
+    // Constructor Based on JsonKey initializer list
+    JsonObject() = default;
+    JsonObject(std::initializer_list<JsonKey> kv_list) {
+        for (auto kv_pair : kv_list){
+            bool keyFound = false;
+            for (auto& pairs : kvmap_) {
+                if(pairs.key_ == kv_pair.key_) {
+                    pairs.var_ = kv_pair.var_;
+                    keyFound = true;
                     break;
-                case Type::String:
-                    mp[arg.key] = arg.sval;
-                    break;
-                case Type::Double:
-                    mp[arg.key] = arg.dval;
-                    break;
-                case Type::Object:
-                    mp[arg.key] = arg.oval; 
-                    break;
-                default:
-                    mp[arg.key] = nullptr;
-                    break;
+                } 
+            }
+
+            // If the key was not found, then this must be
+            // a new entry of the map
+            if (!keyFound) {
+                kvmap_.push_back(kv_pair);
+            }
+        } 
+    }
+
+    std::string typeOf()                 const override{ return "object";}
+    bool        hasKey(std::string key)  const override
+    {
+        // Check if the pair exists
+        for (const auto& pairs : kvmap_) {
+            if(pairs.key_ == key) return true;
+        }
+
+        return false;
+    }
+
+    // Implement toString to display the array
+    std::string toString() const override {
+        std::string result = "{ ";
+        for (const auto &pair : kvmap_) {
+            result += "\"" + pair.key_ + "\": " + pair.var_->toString() + ", ";
+        }
+        result += "}";
+        return result;
+    }
+
+private:
+    std::vector<JsonKey> kvmap_;
+};
+
+class JsonArray : public JsonVariable {
+public:
+    ~JsonArray()
+    {
+        for(auto ptr: array_) delete ptr;
+    }
+
+    // Push each element in the json variable list in the array_
+    template <typename... Args>
+    JsonArray &operator[](Args*... args) {
+        addElements({args...});
+        return *this;
+    }
+
+    // Implement toString to display the array
+    std::string toString() const override {
+        std::string result = "[ ";
+        for (size_t i = 0; i < array_.size(); ++i) {
+            result += array_[i]->toString();
+            if (i < array_.size() - 1) {
+                result += ", ";
             }
         }
+        result += " ]";
+        return result;
     }
 
-    operator int() const {
-        return ival;
-    }
-
-    Object& operator=(int arg) {
-        ival = arg;
-        type = Type::Int;
-        return *this;
-    }
-
-    Object& operator=(std::string arg) {
-        sval = arg;
-        type = Type::String;
-        return *this;
-    }
-
-    Object& operator=(double arg) {
-        dval = arg;
-        type = Type::Double;
-        return *this;
-    }
-
-    Object& operator=(Object* arg) {
-        oval = arg;
-        type = Type::Object;
-        return *this;
-    }
-
-    std::map<std::string, Object> getMap() {return mp;}
-};
-
-class Json {
+    int         sizeOf() const override { return array_.size();}
+    std::string typeOf() const override { return "array";}
 private:
-    std::string name;
-    std::string sval;
-    int ival;
-    double dval;
-    bool bval;
-    Object oval;
-    std::list<Json> array;
-
-public:
-    static std::list<Json> jsonList;
-
-    void display() const {
-        for (auto const& i : jsonList.back().oval.getMap()) {
-        std::cout << i.first << std::endl;
+    // Helper function to add elements
+    void addElements(const std::initializer_list<JsonVariable *> &elements) {
+        for (const auto &element : elements) {
+            array_.push_back(element);
         }
     }
 
-    Json& operator()(std::string name) {
-        Json json;
-        json.name = name;
-        jsonList.emplace_back(json);
-        return *this;
-    }
-
-    Json& operator=(int arg) {
-        jsonList.back().ival = arg;
-        return *this;
-    }
-
-    Json& operator=(std::string arg) {
-        jsonList.back().sval = arg;
-        return *this;
-    }
-
-    Json& operator=(double arg) {
-        jsonList.back().dval = arg;
-        return *this;
-    }
-
-    Json& operator=(bool arg) {
-        jsonList.back().bval = arg;
-        return *this;
-    }
-
-    Json& operator=(Object arg) {
-        jsonList.back().oval = arg;    
-        return *this;
-    }
+    std::vector<JsonVariable*> array_;
 };
 
+// Create a JsonList
+inline std::list<JsonVariable*> operator,(JsonVariable& a, JsonVariable& b)
+{
+    std::list<JsonVariable*> json_list{};
+
+    json_list.push_back(&a);
+    json_list.push_back(&b);
+
+    return json_list;
+}
+
+
+// Prepend JsonList
+inline std::list<JsonVariable*> operator,(JsonVariable* a, std::list<JsonVariable*>& b)
+{
+    b.push_front(a);
+    return (std::move(b));
+}
+
+// Append JsonList
+inline std::list<JsonVariable*> operator,(std::list<JsonVariable*>& b,JsonVariable* a)
+{
+    b.push_back(a);
+    return (std::move(b));
+}
+
+}
+
+#endif // json_dsl lib

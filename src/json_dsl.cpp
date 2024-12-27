@@ -1,20 +1,16 @@
+//#include <json_dsl.hpp>
 #include "../include/json_dsl.hpp"
-
-std::list<Json> Json::jsonList;
+#include <iostream>
 
 PROGRAM_BEGIN
-
-    JSON(obj) = NUMBER(10)
-    JSON(test) = OBJECT{ 
-        KEY(test1):NUMBER(10), 
-        KEY(test2):STRING("test"),
-        KEY(test3):OBJECT{
-                KEY(obj1):NUMBER(5),
-                KEY(obj2):TRUE
-            }
-        }
-
-    ;Json json
-    ;json.display()
+    JSON(obj6) = ARRAY[STRING("A"),STRING("B")]
+    JSON(obj7) = OBJECT {
+        KEY(key)  : STRING("Hello"),
+        KEY(key1) : STRING("WORLD"),
+        KEY(key2) : OBJECT{ KEY(key1):NUMBER(1), KEY(key2):TRUE}
+    };
+    
+    std::cout << obj7->toString() << std::endl; 
+    std::cout << obj6->toString() << std::endl; 
 
 PROGRAM_END
