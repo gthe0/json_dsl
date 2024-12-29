@@ -1,16 +1,8 @@
-//#include <json_dsl.hpp>
-#include "../include/json_dsl.hpp"
-#include <iostream>
+#include "json_dsl.hpp"
 
 PROGRAM_BEGIN
-    JSON(obj6) = ARRAY[STRING("A"),STRING("B")]
-    JSON(obj7) = OBJECT {
-        KEY(key)  : STRING("Hello"),
-        KEY(key1) : STRING("WORLD"),
-        KEY(key2) : OBJECT{ KEY(key1):NUMBER(1), KEY(key2):TRUE}
-    };
-    
-    std::cout << obj7->toString() << std::endl; 
-    std::cout << obj6->toString() << std::endl; 
+
+    JSON(obj1) = ARRAY[STRING("TEST"), STRING("TEST2"), STRING("TEST3")]
+    //std::cout << obj1.toString() << std::endl;
 
 PROGRAM_END
