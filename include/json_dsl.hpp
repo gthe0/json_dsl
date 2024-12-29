@@ -58,7 +58,16 @@ public:
     }
 
     Json& operator[](Json var) {
+
+        auto temp_list = std::move(var.jlist);
+
         jlist.push_back(var);
+
+        for (const auto& ref : temp_list)
+        {
+            jlist.push_back(ref);
+        }
+
         std::cout << jlist.size() << std::endl;
         return *this;
     }
@@ -86,13 +95,13 @@ public:
     }
 };
 
-/* inline std::vector<Json> operator,(Json a, std::vector<Json> jlist) {
+inline std::vector<Json> operator,(Json a, std::vector<Json> jlist) {
     std::vector<Json> json_list {};
 
     json_list.push_back(a);
     
 
     return json_list;
-} */
+}
 
 #endif
