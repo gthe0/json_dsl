@@ -21,7 +21,7 @@
 #define ARRAY Json()
 
 #define SET ;
-#define ASSIGN =
+#define ASSIGN /=
 
 struct Json {
 private:
@@ -58,22 +58,78 @@ public:
     }
 
     Json& operator[](Json var) {
-
         auto temp_list = std::move(var.jlist);
-
+        
         jlist.push_back(var);
 
-        for (const auto& ref : temp_list)
-        {
+        for (const auto& ref : temp_list) {
             jlist.push_back(ref);
         }
 
-        std::cout << jlist.size() << std::endl;
         return *this;
     }
     
     Json& operator,(Json var) {
         jlist.push_back(var);
+        return *this;
+    }
+
+    Json& operator[](std::string arg) {     // SET OBJECT
+        sval = arg;
+        return *this;
+    }
+
+    Json& operator[](int arg) {     // SET ARRAY
+        nval = arg;
+        return *this;
+    }
+
+    Json& operator/=(Json var) {
+        if(this != &var) {
+            if(type == Type::String || type == Type::Number) {
+                type = var.type;
+                sval = var.sval;
+                nval = var.nval;
+                olist = var.olist;
+                jlist = var.jlist;
+            } else if(!jlist.empty()) {     // SET ARRAY
+                jlist[nval].sval = sval;
+                jlist[nval] /= var;
+            } else {                        // SET OBJECT
+                if(var.olist.empty()) {
+                    int exists = 0;
+                    for (auto& pair : olist) {
+                        if(pair.key == sval) {
+                            exists = 1;
+                            pair.value = new Json(var);
+                        }
+                    }
+                    if(exists == 0) {
+                        oval.key = sval;
+                        oval.value = new Json(var);
+                        olist.push_back(oval);
+                    }
+                } else {
+                    int exists = 0;
+                    for (auto& pair : olist) {
+                        if(pair.key == sval) {
+                            exists = 1;
+                            pair.value = new Json(var);
+                        }
+                    }
+                    if(exists == 0) {
+                        if(olist.empty())
+                            olist = var.olist;
+                        else {
+                            oval.key = sval;
+                            oval.value = new Json(var);
+                            olist.push_back(oval);                           
+                        }
+                    }
+                    
+                }
+            }
+        }
         return *this;
     }
 
@@ -91,17 +147,28 @@ public:
             result += " }";
             return result;
         }
+        else if(!jlist.empty()) {
+            std::string result = "[ ";
+            for (auto& var : jlist) {
+                if(&var == &jlist.back())
+                    result += var.toString();
+                else
+                    result += var.toString() + ", ";
+            }
+            result += " ]";
+            return result;
+        }
         return "NULL";
     }
 };
 
-inline std::vector<Json> operator,(Json a, std::vector<Json> jlist) {
+/* inline std::vector<Json> operator,(Json a, std::vector<Json> jlist) {
     std::vector<Json> json_list {};
 
     json_list.push_back(a);
     
 
     return json_list;
-}
+} */
 
 #endif
