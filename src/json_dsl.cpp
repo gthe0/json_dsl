@@ -10,8 +10,8 @@ PROGRAM_BEGIN
     };
 
     JSON(obj1) = OBJECT {KEY(key)  : STRING("Hello")};
-    JSON(obj2) = ARRAY[STRING("A")];
-    JSON(obj3) = ARRAY[STRING("A"),STRING("B")];
+    JSON(obj2) = ARRAY
+    JSON(obj3) = ARRAY[STRING("A"),STRING("B"),STRING("C")];
     
     std::cout << obj0->toString() << std::endl; 
     std::cout << obj1->toString() << std::endl; 

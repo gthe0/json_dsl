@@ -20,7 +20,7 @@ public:
     virtual std::string toString()               const {return "";}
 
     // Mostly the same in all of the derived classes
-    virtual int         sizeOf()                 const { return 1; }
+    virtual size_t      sizeOf()                 const { return 1; }
     virtual bool        isEmpty()                const { return false; }
     virtual bool        hasKey(std::string key)  const { return false; }
 
@@ -156,22 +156,27 @@ public:
         return result;
     }
 
-    JsonArray& operator[](JsonVariable* ptr)
-    {
-        array_.push_back(ptr);
-        return *this;
-    };
 
-    JsonArray& operator[](JsonVector& ptr)
-    {
-        array_ = ptr;
+    // This functions does not work properly currently
+    template <typename... JsonVars>
+    JsonArray& operator[](JsonVars*... var_list) {
+        addHelper(var_list...);
         return *this;
-    };
+    }
 
-    int         sizeOf() const override { return array_.size();}
+    size_t      sizeOf() const override { return array_.size();}
     std::string typeOf() const override { return "array";}
 private:
     JsonVector array_;
+
+    void addHelper() 
+    { /* Base case for recursion - do nothing */}
+
+    template <typename First, typename... Rest>
+    void addHelper(First* first, Rest*... rest) {
+        array_.push_back(first);
+        addHelper(rest...);
+    }
 };
 
 // Used to create a JsonArray Object and bypass
