@@ -1,16 +1,21 @@
-#include <json_dsl.hpp>
+#include <JsonLang.hpp>
 #include <iostream>
 
 PROGRAM_BEGIN
-    JSON(obj7) = OBJECT {
+
+    JSON(obj0) = OBJECT {
         KEY(key)  : STRING("Hello"),
         KEY(key1) : STRING("WORLD"),
         KEY(key2) : OBJECT{ KEY(key1):NUMBER(1)}
     };
 
-    JSON(obj8) = OBJECT {KEY(key)  : STRING("Hello")};
+    JSON(obj1) = OBJECT {KEY(key)  : STRING("Hello")};
+    JSON(obj2) = ARRAY[STRING("A")];
+    JSON(obj3) = ARRAY[STRING("A"),STRING("B")];
     
-    std::cout << obj7->toString() << std::endl; 
-    std::cout << obj8->toString() << std::endl; 
+    std::cout << obj0->toString() << std::endl; 
+    std::cout << obj1->toString() << std::endl; 
+    std::cout << obj2->toString() << std::endl; 
+    std::cout << obj3->toString() << std::endl; 
 
 PROGRAM_END

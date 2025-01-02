@@ -1,32 +1,14 @@
 #ifndef JSON_DSL_HPP
 #define JSON_DSL_HPP
 
-#include <list>
 #include <vector>
 #include <string>
 
 namespace jsonlang{
 
-#define PROGRAM_BEGIN int main(void) {
-#define PROGRAM_END \
-    ;return 0; }
-
-#define JSON(var)   ;jsonlang::JsonVariable* var
-
-#define KEY(var)    jsonlang::JsonKey(#var) = 0 ? 0
-
-// Variable Values
-#define STRING(var) new jsonlang::JsonString(var)
-#define NUMBER(var) new jsonlang::JsonNumber(var)
-#define TRUE        new jsonlang::JsonBoolean(true)
-#define FALSE       new jsonlang::JsonBoolean(false)
-#define OBJECT      new jsonlang::JsonObject
-
-// Macros that call members
-#define HAS_KEY (var,key)   var == NULL ? new jsonlang::JsonBoolean(false) :new jsonlang::JsonBoolean(var->hasKey(key))
-#define IS_EMPTY(var)       var == NULL ? new jsonlang::JsonBoolean(false) :new jsonlang::JsonBoolean(var->isEmpty())
-#define SIZE_OF (var)       var == NULL ? NUMBER(1)      :NUMBER(var->sizeOf())
-#define TYPE_OF (var)       var == NULL ? STRING("null") :STRING(var->typeOf())
+// Forward Declare
+class JsonVariable ;
+using JsonVector =  std::vector<JsonVariable*>;
 
 // Define a common interface for all Objects
 class JsonVariable {
@@ -50,7 +32,7 @@ inline JsonVariable::~JsonVariable(){}
 // JsonKey is Used only in the object construction
 class JsonKey {
 public:
-     JsonKey(std::string key): key_(key) {}
+     JsonKey(std::string key): var_(NULL), key_(key) {}
      
     // Used for the object construction
     JsonKey& operator=(JsonVariable* var)
@@ -174,38 +156,29 @@ public:
         return result;
     }
 
+    JsonArray& operator[](JsonVariable* ptr)
+    {
+        array_.push_back(ptr);
+        return *this;
+    };
+
+    JsonArray& operator[](JsonVector& ptr)
+    {
+        array_ = ptr;
+        return *this;
+    };
+
     int         sizeOf() const override { return array_.size();}
     std::string typeOf() const override { return "array";}
 private:
-    std::vector<JsonVariable*> array_;
+    JsonVector array_;
 };
 
-// Create a JsonList
-inline std::list<JsonVariable*> operator,(JsonVariable& a, JsonVariable& b)
-{
-    std::list<JsonVariable*> json_list{};
+// Used to create a JsonArray Object and bypass
+// problems caused by new[] overloading
+inline JsonArray& createJsonArray(void)
+{ return *(new JsonArray()); }
 
-    json_list.push_back(&a);
-    json_list.push_back(&b);
-
-    return json_list;
-}
-
-
-// Prepend JsonList
-inline std::list<JsonVariable*> operator,(JsonVariable* a, std::list<JsonVariable*>& b)
-{
-    b.push_front(a);
-    return (std::move(b));
-}
-
-// Append JsonList
-inline std::list<JsonVariable*> operator,(std::list<JsonVariable*>& b,JsonVariable* a)
-{
-    b.push_back(a);
-    return (std::move(b));
-}
-
-}
+} // namespace jsonlang
 
 #endif // json_dsl lib
