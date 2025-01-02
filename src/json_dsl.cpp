@@ -1,9 +1,20 @@
-#include "json_dsl.hpp"
+#include <JsonLang.hpp>
 
 PROGRAM_BEGIN
 
-    JSON(obj1) = ARRAY[STRING("test"), OBJECT{KEY(key3):NUMBER(10)}]
-    SET obj1[1]["key5"] ASSIGN OBJECT{KEY(key8):NUMBER(1)};
-    std::cout << obj1.toString() << std::endl;
+    JSON(obj0) = OBJECT {
+        KEY(key)  : STRING("Hello"),
+        KEY(key1) : STRING("WORLD"),
+        KEY(key2) : OBJECT{ KEY(key1):NUMBER(1)}
+    };
+
+    JSON(obj1) = OBJECT {KEY(key)  : STRING("Hello")};
+    JSON(obj2) = ARRAY
+    JSON(obj3) = ARRAY[STRING("A"),STRING("B"),STRING("C")];
+    
+    std::cout << obj0->toString() << std::endl; 
+    std::cout << obj1->toString() << std::endl; 
+    std::cout << obj2->toString() << std::endl; 
+    std::cout << obj3->toString() << std::endl; 
 
 PROGRAM_END

@@ -1,3 +1,17 @@
 # Ignore Build Artifacts
 build
 bin
+
+# Ignore vs made stuff
+.vs
+.vscode
+
+# Ignore misc and exe files
+*.out
+*.exe
+
+*.txt
+.cache
+
+# Do not Ignore
+!CMakeLists.txt
