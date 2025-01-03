@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <iostream>
 #include <initializer_list>
 
 #include <json_kv_pair.hpp>
@@ -21,12 +22,12 @@ class JsonVar
 public:
 
     // Constructors
-    JsonVar()               : type_(JsonVar::kNull) {}
-    JsonVar(bool boolean)   : type_(JsonVar::kBoolean), bool_(boolean) {}
-    JsonVar(int num)        : type_(JsonVar::kNumber), num_(num) {}
-    JsonVar(double num)     : type_(JsonVar::kNumber), num_(num) {}
-    JsonVar(JsonString  str): type_(JsonVar::kString), str_(std::move(str)) {}
-    JsonVar(std::initializer_list<KeyValue> kv_list):
+    explicit JsonVar()               : type_(JsonVar::kNull), num_(0) {}
+    explicit JsonVar(int num)        : type_(JsonVar::kNumber), num_(num) {}
+    explicit JsonVar(double num)     : type_(JsonVar::kNumber), num_(num) {}
+    explicit JsonVar(bool boolean)   : type_(JsonVar::kBoolean), bool_(boolean) {}
+    explicit JsonVar(JsonString  str): type_(JsonVar::kString), str_(std::move(str)) {}
+    explicit JsonVar(std::initializer_list<KeyValue> kv_list):
         type_(JsonVar::kObject) 
     {
         new(&kvmap_) JsonObject();
@@ -37,7 +38,8 @@ public:
     }
     
     // Copy constructor
-    JsonVar(const JsonVar &other) {
+    JsonVar(const JsonVar &other): num_(0) {
+        cleanup();
         type_ = other.type_;
         switch (type_)
         {
@@ -53,10 +55,35 @@ public:
    ~JsonVar() { cleanup(); };
 
     // Overloaded Operators
-    JsonVar& operator=(std::nullptr_t)
+   // Implicit number to JsonVar conversion is prohibited
+   // If the number passed is 0 then I assume that is a NULL
+    JsonVar& operator=(int num)
     {
+        if(num != NULL)
+        {
+            std::cerr << "Error: Implicit Number to JsonVar convertion is prohibited!\n";
+        }
+
         cleanup();
         type_ = JsonVar::kNull;
+        return *this;
+    }
+
+    // Copy operator
+    JsonVar& operator=(const JsonVar& other)
+    {
+        cleanup();
+        type_ = other.type_;
+        switch (type_)
+        {
+        case kString: new (&str_) JsonString(other.str_); break;
+        case kNumber: num_ = other.num_; break;
+        case kBoolean: bool_ = other.bool_; break;
+        case kObject: new (&kvmap_) JsonObject(other.kvmap_); break;
+        case kArray: new (&array_) JsonArray(other.array_); break;
+        default: break;
+        }
+
         return *this;
     }
 

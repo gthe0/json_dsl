@@ -3,28 +3,22 @@
 
 PROGRAM_BEGIN
 
-    JSON(object0) = TRUE;
-
 
     JSON(obj0) = OBJECT {
         KEY(key)  : STRING("Hello"),
         KEY(key1) : STRING("WORLD"),
         KEY(key2) : OBJECT{ KEY(key1):NUMBER(1)}
-    };
+    }
 
-    JSON(obj1) = OBJECT {KEY(key)  : STRING("Hello")};
-    
-    /*
-    JSON(obj2) = ARRAY
-    JSON(obj3) = ARRAY[STRING("A"),STRING("B"),STRING("C")];
-    
-    std::cout << obj2->toString() << std::endl; 
-    std::cout << obj3->toString() << std::endl; 
-    */
+    JSON(obj1) = OBJECT {KEY(key)  : STRING("Hello")}
+    SET obj1 ASSIGN obj0
+    SET obj1 ASSIGN NULL
 
-    std::cout << object0.toString() << std::endl; 
+    JSON(obj2) = TRUE;
+    
 
     std::cout << obj0.toString() << std::endl;
     std::cout << obj1.toString() << std::endl;
+    std::cout << obj2.toString() << std::endl; 
 
 PROGRAM_END

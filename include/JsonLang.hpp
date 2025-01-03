@@ -34,7 +34,7 @@
     ;return 0; }
 
 #define JSON(var)   ;jsonlang::JsonVar var
-#define KEY(var)    jsonlang::KeyValue(#var) = 0 ? 0
+#define KEY(var)    jsonlang::KeyValue(#var) = 0 ? jsonlang::JsonVar()
 
 // Variable Values
 #define STRING(var) jsonlang::JsonVar(var)
@@ -43,5 +43,8 @@
 #define FALSE       jsonlang::JsonVar(false)
 #define ARRAY       jsonlang::JsonVar()
 #define OBJECT      jsonlang::JsonVar
+
+#define SET         ;
+#define ASSIGN      =
 
 #endif //! JSONLANG_HPP
