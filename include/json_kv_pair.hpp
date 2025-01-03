@@ -16,7 +16,7 @@ struct KeyValue
     JsonKey     key_;
     JsonVar*    var_;
 
-    KeyValue(JsonKey key): key_(std::move(key)) {}
+    KeyValue(JsonKey key): key_(std::move(key)), var_(nullptr) {}
     KeyValue& operator=(JsonVar& var)
     {
         var_ = &var;

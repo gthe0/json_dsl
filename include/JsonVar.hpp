@@ -22,11 +22,14 @@ class JsonVar
 public:
 
     // Constructors
-    explicit JsonVar()               : type_(JsonVar::kNull), num_(0) {}
-    explicit JsonVar(int num)        : type_(JsonVar::kNumber), num_(num) {}
+    explicit JsonVar()               : type_(JsonVar::kObject) { new(&kvmap_) JsonObject(); }
     explicit JsonVar(double num)     : type_(JsonVar::kNumber), num_(num) {}
     explicit JsonVar(bool boolean)   : type_(JsonVar::kBoolean), bool_(boolean) {}
     explicit JsonVar(JsonString  str): type_(JsonVar::kString), str_(std::move(str)) {}
+    explicit JsonVar(int a, int b)   : type_(JsonVar::kArray)
+    {
+        new (&array_) JsonArray();
+    }
     explicit JsonVar(std::initializer_list<KeyValue> kv_list):
         type_(JsonVar::kObject) 
     {
@@ -36,10 +39,10 @@ public:
             kvmap_.insert({ kv_pair.key_,*(kv_pair.var_) });
         }
     }
+
     
     // Copy constructor
     JsonVar(const JsonVar &other): num_(0) {
-        cleanup();
         type_ = other.type_;
         switch (type_)
         {
@@ -87,6 +90,36 @@ public:
         return *this;
     }
 
+    JsonArray operator,(const JsonVar& rhs)
+    {
+        return {*this, rhs};
+    }
+
+    JsonArray operator,(JsonArray rhs)
+    {
+        rhs.push_back(*this);
+        return rhs;
+    }
+
+    JsonVar& operator[](JsonArray rhs)
+    {
+        cleanup();
+        
+        type_ = JsonVar::kArray;
+        array_ = std::move(rhs);
+
+        return *this;
+    }
+
+    JsonVar& operator[](const JsonVar& rhs)
+    {
+        cleanup();
+
+        type_ = JsonVar::kArray;
+        array_.push_back(rhs);
+        return *this;
+    }
+
     // Turn to String based on type
     JsonString toString() const
     {
@@ -111,7 +144,7 @@ public:
             }
             case kArray:
             {
-                JsonString result = "[ ";
+                result = "[ ";
                 for (size_t i = 0; i < array_.size(); ++i) {
                     result += array_[i].toString();
                     if (i < array_.size() - 1) {
@@ -123,7 +156,6 @@ public:
             }
             default: result = "null";
         }
-
         return result;
     }
 

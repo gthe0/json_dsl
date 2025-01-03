@@ -37,11 +37,11 @@
 #define KEY(var)    jsonlang::KeyValue(#var) = 0 ? jsonlang::JsonVar()
 
 // Variable Values
-#define STRING(var) jsonlang::JsonVar(var)
-#define NUMBER(var) jsonlang::JsonVar(var)
+#define STRING(var) jsonlang::JsonVar(static_cast<std::string>(var))
+#define NUMBER(var) jsonlang::JsonVar(static_cast<double>(var))
 #define TRUE        jsonlang::JsonVar(true)
 #define FALSE       jsonlang::JsonVar(false)
-#define ARRAY       jsonlang::JsonVar()
+#define ARRAY       jsonlang::JsonVar(0,0)
 #define OBJECT      jsonlang::JsonVar
 
 #define SET         ;
