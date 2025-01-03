@@ -22,7 +22,7 @@ class JsonVar
 public:
 
     // Constructors
-    explicit JsonVar()               : type_(JsonVar::kObject) { new(&kvmap_) JsonObject(); }
+    explicit JsonVar()               : type_(JsonVar::kObject) { new(&object_) JsonObject(); }
     explicit JsonVar(double num)     : type_(JsonVar::kNumber), num_(num) {}
     explicit JsonVar(bool boolean)   : type_(JsonVar::kBoolean), bool_(boolean) {}
     explicit JsonVar(JsonString  str): type_(JsonVar::kString), str_(std::move(str)) {}
@@ -33,10 +33,10 @@ public:
     explicit JsonVar(std::initializer_list<KeyValue> kv_list):
         type_(JsonVar::kObject) 
     {
-        new(&kvmap_) JsonObject();
+        new(&object_) JsonObject();
         for (const auto& kv_pair: kv_list)
         {
-            kvmap_.insert({ kv_pair.key_,*(kv_pair.var_) });
+            object_.insert({ kv_pair.key_,*(kv_pair.var_) });
         }
     }
 
@@ -49,7 +49,7 @@ public:
             case kString: new (&str_) JsonString(other.str_); break;
             case kNumber: num_ = other.num_; break;
             case kBoolean: bool_ = other.bool_; break;
-            case kObject: new (&kvmap_) JsonObject(other.kvmap_); break;
+            case kObject: new (&object_) JsonObject(other.object_); break;
             case kArray: new (&array_) JsonArray(other.array_); break;
             default: break;
         }
@@ -82,7 +82,7 @@ public:
         case kString: new (&str_) JsonString(other.str_); break;
         case kNumber: num_ = other.num_; break;
         case kBoolean: bool_ = other.bool_; break;
-        case kObject: new (&kvmap_) JsonObject(other.kvmap_); break;
+        case kObject: new (&object_) JsonObject(other.object_); break;
         case kArray: new (&array_) JsonArray(other.array_); break;
         default: break;
         }
@@ -90,6 +90,8 @@ public:
         return *this;
     }
 
+
+    // BEGIN: These are used for Array Creation and Printing
     JsonArray operator,(const JsonVar& rhs)
     {
         return {*this, rhs};
@@ -119,6 +121,196 @@ public:
         array_.push_back(rhs);
         return *this;
     }
+    // END
+
+
+    // BEGIN
+    //
+    // Eq operator
+    //
+    // The comparisons of the various objects
+    // are already defined in the standard and thus
+    // are implemented
+    JsonVar operator==(const JsonVar& rvalue)
+    {
+        if( rvalue.type_ != type_ ) return JsonVar(false);
+
+        bool result = false;
+        switch (type_)
+        {
+            case kNumber:    result = (rvalue.num_   == num_);  break;
+            case kString:    result = (rvalue.str_   == str_); break;
+            case kBoolean:   result = (rvalue.bool_  == bool_); break;
+            /*case kArray:     result = (rvalue.array_ == array_); break;
+            case kObject:    result = (rvalue.object_ == object_); break;
+            */default: result = true;
+        }
+
+        return JsonVar(result);
+    }
+
+    JsonVar operator!=(const JsonVar& rvalue)
+    {
+        JsonVar result = (*this == rvalue);
+        result.bool_ = !result.bool_;
+        return result;
+    }
+
+    JsonVar operator&&(const JsonVar& rvalue)
+    {
+        if(type_ != JsonVar::kBoolean || rvalue.type_ != type_)
+        {
+            std::cerr << "Error: logical operators can\
+                          only be used between booleans" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(rvalue.bool_ && bool_);
+    }
+
+    JsonVar operator||(const JsonVar& rvalue)
+    {
+        if(type_ != JsonVar::kBoolean || rvalue.type_ != type_)
+        {
+            std::cerr << "Error: logical operators can\
+                          only be used between booleans" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(rvalue.bool_ || bool_);
+    }
+
+    JsonVar operator!()
+    {
+        if(type_ != JsonVar::kBoolean)
+        {
+            std::cerr << "Error: logical operators can\
+                          only be used between booleans" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(!bool_);
+    }
+
+    //END Logical operators
+
+
+    // BEGIN Arithmentic operators
+    
+    JsonVar operator*(const JsonVar& number)
+    {
+        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        {
+            std::cerr << "Error: arithmentic operators can\
+                          only be used between numbers" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(static_cast<double>(number.num_ * num_));
+    }
+
+    JsonVar operator/(const JsonVar& number)
+    {
+        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        {
+            std::cerr << "Error: arithmentic operators can\
+                          only be used between numbers" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(static_cast<double>(number.num_ / num_));
+    }
+
+    JsonVar operator-(const JsonVar& number)
+    {
+        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        {
+            std::cerr << "Error: arithmentic operators can\
+                          only be used between numbers" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(static_cast<double>(number.num_ - num_));
+    }
+
+    JsonVar operator%(const JsonVar& number)
+    {
+        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        {
+            std::cerr << "Error: arithmentic operators can\
+                          only be used between numbers" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        // It can only be used between integers
+        return JsonVar(
+            static_cast<double>(
+            static_cast<int>(number.num_) % static_cast<int>(num_)));
+    }
+
+    JsonVar operator>(const JsonVar& number)
+    {
+        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        {
+            std::cerr << "Error: arithmentic operators can\
+                          only be used between numbers" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(number.num_ > num_);
+    }
+
+    JsonVar operator<(const JsonVar& number)
+    {
+        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        {
+            std::cerr << "Error: arithmentic operators can\
+                          only be used between numbers" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(number.num_ < num_);
+    }
+
+    JsonVar operator>=(const JsonVar& number)
+    {
+        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        {
+            std::cerr << "Error: arithmentic operators can\
+                          only be used between numbers" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(number.num_ >= num_);
+    }
+
+    JsonVar operator<=(const JsonVar& number)
+    {
+        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        {
+            std::cerr << "Error: arithmentic operators can\
+                          only be used between numbers" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        return JsonVar(number.num_ <= num_);
+    }
+
+    // END Arithmentic operators
+
+
+
 
     // Turn to String based on type
     JsonString toString() const
@@ -134,7 +326,7 @@ public:
             {
                 result = "{ ";
 
-                for (const auto &pair_ : kvmap_)
+                for (const auto &pair_ : object_)
                 {
                     result += "\"" + pair_.first + "\": " + pair_.second.toString() + ", ";
                 }
@@ -178,7 +370,7 @@ private:
         bool        bool_;
         double      num_;
         JsonString  str_;
-        JsonObject  kvmap_;
+        JsonObject  object_;
         JsonArray   array_;
     };
 
@@ -189,7 +381,7 @@ private:
         {
             // These are the only Objects to cleanup
             case kString:   str_.~basic_string(); break;
-            case kObject:   kvmap_.~map();        break;
+            case kObject:   object_.~map();        break;
             case kArray:    array_.~vector();     break;
             default: return;
         }
