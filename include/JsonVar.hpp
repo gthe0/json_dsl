@@ -64,7 +64,7 @@ public:
     {
         if(num != NULL)
         {
-            std::cerr << "Error: Implicit Number to JsonVar convertion is prohibited!\n";
+            throw std::runtime_error("Error: Implicit Number to JsonVar convertion is prohibited!");
         }
 
         cleanup();
@@ -90,15 +90,22 @@ public:
         return *this;
     }
 
-
     // BEGIN: These are used for Array Creation and Printing
     JsonArray operator,(const JsonVar& rhs)
     {
-        return {*this, rhs};
+        if (this->isEqual(rhs))
+            return { *this };
+        else
+            return {*this, rhs};
     }
 
     JsonArray operator,(JsonArray rhs)
     {
+        for (const auto& temp : rhs)
+        {
+            if (this->isEqual(temp)) return rhs;
+        }
+
         rhs.push_back(*this);
         return rhs;
     }
@@ -113,16 +120,48 @@ public:
         return *this;
     }
 
-    JsonVar& operator[](const JsonVar& rhs)
-    {
+    JsonVar& operator[](const JsonVar rhs)
+    {   
         cleanup();
 
         type_ = JsonVar::kArray;
         array_.push_back(rhs);
-        return *this;
+        return *this; 
     }
     // END
 
+    // BEGIN Access Operators
+    JsonVar& operator[](const int index)
+    {
+        if (type_ != kArray)
+        {
+            throw std::runtime_error("The Json Variable is not an Array!");
+        }
+
+        if (index >= array_.size() || index < 0)
+        {
+            throw std::runtime_error("Array out of bounds");
+        }
+
+        return array_[index];
+    }
+
+    JsonVar& operator[](const std::string name)
+    {
+        if (type_ != kObject)
+        {
+            throw std::runtime_error("The Json Variable is not an Object!");
+        }
+
+        auto it = object_.find(name);
+        if (it == object_.end()) 
+        { 
+            throw std::runtime_error("Key not found in JSON object!");
+        } 
+        
+        return it->second;
+    }
+    // END Access Operators
 
     // BEGIN
     //
@@ -133,19 +172,7 @@ public:
     // are implemented
     JsonVar operator==(const JsonVar& rvalue)
     {
-        if( rvalue.type_ != type_ ) return JsonVar(false);
-
-        bool result = false;
-        switch (type_)
-        {
-            case kNumber:    result = (rvalue.num_   == num_);  break;
-            case kString:    result = (rvalue.str_   == str_); break;
-            case kBoolean:   result = (rvalue.bool_  == bool_); break;
-            /*case kArray:     result = (rvalue.array_ == array_); break;
-            case kObject:    result = (rvalue.object_ == object_); break;
-            */default: result = true;
-        }
-
+        bool result = isEqual(rvalue);
         return JsonVar(result);
     }
 
@@ -160,10 +187,7 @@ public:
     {
         if(type_ != JsonVar::kBoolean || rvalue.type_ != type_)
         {
-            std::cerr << "Error: logical operators can\
-                          only be used between booleans" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: logical operators can only be used between booleans");
         }
 
         return JsonVar(rvalue.bool_ && bool_);
@@ -173,10 +197,7 @@ public:
     {
         if(type_ != JsonVar::kBoolean || rvalue.type_ != type_)
         {
-            std::cerr << "Error: logical operators can\
-                          only be used between booleans" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: logical operators can only be used between booleans");
         }
 
         return JsonVar(rvalue.bool_ || bool_);
@@ -186,10 +207,7 @@ public:
     {
         if(type_ != JsonVar::kBoolean)
         {
-            std::cerr << "Error: logical operators can\
-                          only be used between booleans" << std::endl;
-
-            exit(EXIT_FAILURE);
+            throw std::runtime_error("Error: logical operators can only be used between booleans");
         }
 
         return JsonVar(!bool_);
@@ -204,10 +222,7 @@ public:
     {
         if(type_ != JsonVar::kNumber || type_!=number.type_)
         {
-            std::cerr << "Error: arithmentic operators can\
-                          only be used between numbers" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");
         }
 
         return JsonVar(static_cast<double>(number.num_ * num_));
@@ -217,10 +232,7 @@ public:
     {
         if(type_ != JsonVar::kNumber || type_!=number.type_)
         {
-            std::cerr << "Error: arithmentic operators can\
-                          only be used between numbers" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");
         }
 
         return JsonVar(static_cast<double>(number.num_ / num_));
@@ -230,10 +242,7 @@ public:
     {
         if(type_ != JsonVar::kNumber || type_!=number.type_)
         {
-            std::cerr << "Error: arithmentic operators can\
-                          only be used between numbers" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: arithmentic operators can only be used between numbers" );
         }
 
         return JsonVar(static_cast<double>(number.num_ - num_));
@@ -243,10 +252,7 @@ public:
     {
         if(type_ != JsonVar::kNumber || type_!=number.type_)
         {
-            std::cerr << "Error: arithmentic operators can\
-                          only be used between numbers" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");          
         }
 
         // It can only be used between integers
@@ -259,10 +265,7 @@ public:
     {
         if(type_ != JsonVar::kNumber || type_!=number.type_)
         {
-            std::cerr << "Error: arithmentic operators can\
-                          only be used between numbers" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");            
         }
 
         return JsonVar(number.num_ > num_);
@@ -272,10 +275,7 @@ public:
     {
         if(type_ != JsonVar::kNumber || type_!=number.type_)
         {
-            std::cerr << "Error: arithmentic operators can\
-                          only be used between numbers" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");
         }
 
         return JsonVar(number.num_ < num_);
@@ -285,10 +285,7 @@ public:
     {
         if(type_ != JsonVar::kNumber || type_!=number.type_)
         {
-            std::cerr << "Error: arithmentic operators can\
-                          only be used between numbers" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: arithmentic operators can only be used between numbers" );
         }
 
         return JsonVar(number.num_ >= num_);
@@ -298,10 +295,7 @@ public:
     {
         if(type_ != JsonVar::kNumber || type_!=number.type_)
         {
-            std::cerr << "Error: arithmentic operators can\
-                          only be used between numbers" << std::endl;
-
-            exit(EXIT_FAILURE);
+             throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");
         }
 
         return JsonVar(number.num_ <= num_);
@@ -385,6 +379,56 @@ private:
             case kArray:    array_.~vector();     break;
             default: return;
         }
+    }
+
+    // Equality checks
+    bool isEqual(const JsonVar& rvalue) const
+    {
+        if (rvalue.type_ != type_) return false;
+    
+        bool result = false;
+        switch (type_)
+        {
+        case kNumber:    result = (rvalue.num_ == num_);  break;
+        case kString:    result = (rvalue.str_ == str_); break;
+        case kBoolean:   result = (rvalue.bool_ == bool_); break;
+        case kArray:     result = ArrayEq(rvalue.array_); break;
+        case kObject:    result = ObjectEq(rvalue.object_); break;
+        default: result = true;
+        }
+    
+        return result;
+    }
+
+    // Check Object Equality
+    bool ObjectEq(const JsonObject& object) const
+    {
+        if (type_ != JsonVar::kObject)       return false;
+        if (object_.size() != object.size()) return false;
+
+        for (const auto& pair : object_)
+        {
+            auto it = object.find(pair.first);
+            
+            if (it == object.end() || !(pair.second.isEqual(it->second))) 
+                return false;
+        }
+
+        return true;
+    }
+
+    // Check Array Equality
+    bool ArrayEq(const JsonArray& array) const
+    {
+        if (type_ != JsonVar::kArray)      return false;
+        if (array_.size() != array.size()) return false;
+
+        for (size_t i = 0; i < array.size(); i++)
+        {
+            if (!array_[i].isEqual(array[i])) return false;
+        }
+
+        return true;
     }
 };
 
