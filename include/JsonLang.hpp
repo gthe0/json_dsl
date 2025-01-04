@@ -3,6 +3,7 @@
 
 #include <JsonVar.hpp>
 #include <JsonPrinter.hpp>
+#include <JsonEraser.hpp>
 #include <json_kv_pair.hpp>
 
 #define PROGRAM_BEGIN int main(void) {
@@ -25,5 +26,12 @@
 #define APPEND      <<
 
 #define PRINT       ;jsonlang::JsonVarPrinter(),
+#define ERASE       ;jsonlang::JsonVarEraser(),
+
+
+#define TYPE_OF(var)        var.typeOf()
+#define IS_EMPTY(var)       var.isEmpty()
+#define SIZE_OF(var)        var.sizeOf()
+#define HAS_KEY(var, key)   var.hasKey(#key)
 
 #endif //! JSONLANG_HPP

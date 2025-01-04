@@ -397,9 +397,55 @@ public:
         return result;
     }
 
-    auto getType() { return type_; }
+    // BEGIN Utility functions
+    
+    void erase()
+    {}
 
+    // Return the type of the variable
+    JsonVar typeOf()
+    {
+        std::string result;
 
+        switch (type_)
+        {
+        case kNumber:    result = "number";  break;
+        case kString:    result = "string"; break;
+        case kBoolean:   result = "boolean"; break;
+        case kArray:     result = "array"; break;
+        case kObject:    result = "object"; break;
+        case kNull:      result = "null"; break;
+        default:         result = "";
+        }
+
+        return JsonVar(static_cast<std::string>(result));
+    }
+
+    // Returns whether a key is found in an object
+    JsonVar hasKey(std::string Key)
+    {
+        if (type_ != JsonVar::kObject)  return JsonVar(false);
+        return JsonVar(object_.find(Key) != object_.end());
+    }
+    
+    // Checks whether an array or an object is empty
+    JsonVar isEmpty()
+    {
+        if (type_ == JsonVar::kObject)          return  JsonVar(object_.empty());
+        if (type_ == JsonVar::kArray)           return  JsonVar(array_.empty());
+            
+        return JsonVar(false);
+    }
+
+    JsonVar sizeOf()
+    {
+        if (type_ == kObject) return JsonVar(static_cast<double>(object_.size()));
+        if (type_ == kArray)  return JsonVar(static_cast<double>(array_.size()));
+            
+        return JsonVar(static_cast<double>(1));
+    }
+
+    // END Utility functions
 
 private:
 
