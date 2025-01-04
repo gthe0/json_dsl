@@ -21,13 +21,9 @@ PROGRAM_BEGIN
     JSON(obj5) = ARRAY[STRING("HELLO"),STRING("WORD")];
     JSON(obj6) = OBJECT{};
     
+    PRINT obj0, obj1, obj2, STRING("   AAAAAAAAA\n")
+    PRINT obj3, obj4
+    PRINT obj5
+    PRINT obj6
 
-    std::cout << obj0.toString() << std::endl;
-    std::cout << obj1.toString() << std::endl;
-    std::cout << obj2.toString() << std::endl;
-    std::cout << obj3.toString() << std::endl;
-    std::cout << obj4.toString() << std::endl;
-    std::cout << obj5.toString() << std::endl;
-    std::cout << obj6.toString();
-   
 PROGRAM_END

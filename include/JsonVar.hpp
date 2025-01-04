@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <iostream>
+#include <stdexcept>
 #include <initializer_list>
 
 #include <json_kv_pair.hpp>
@@ -303,8 +303,60 @@ public:
 
     // END Arithmentic operators
 
+    // BEGIN + Operator
+    
+    JsonVar operator+(const JsonVar& rhs)
+    {
+        if (rhs.type_ != type_)
+        {
+            throw std::runtime_error("Error, Cannot use + with Variables of different types!");
+        }
+    
+        switch (type_)
+        {
+            case kNumber:
+                {
+                    return JsonVar(static_cast<double>(rhs.num_ + num_));
+                }
+            case kString:   
+                {
+                    return JsonVar(static_cast<std::string>(rhs.str_ + str_));
+                }
+            case kArray:  
+                {
+                    JsonVar temp = *this;
 
+                    for (const JsonVar& rhs_value : rhs.array_) {
+                        bool doesExist = false;
+                        for (const JsonVar& lhs_value : temp.array_) {
+                            if(lhs_value.isEqual(rhs_value))
+                            {
+                                doesExist = true;
+                                break;
+                            }
+                        }
+                        if(!doesExist) temp.array_.push_back(rhs_value);
+                    }
 
+                    return temp;
+                }
+            case kObject:
+                {
+                    JsonVar temp = *this;
+                    for (const auto& pair : rhs.object_)
+                    {
+                        temp.object_.insert(pair);
+                    }
+                    return temp; 
+                }
+        default:
+            throw std::runtime_error("Error, Cannot use + with NULL or Booleans!");
+        }
+    
+        return JsonVar();
+    }
+
+    // END   + Operator 
 
     // Turn to String based on type
     JsonString toString() const
@@ -344,6 +396,10 @@ public:
         }
         return result;
     }
+
+    auto getType() { return type_; }
+
+
 
 private:
 
