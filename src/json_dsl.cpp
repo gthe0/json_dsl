@@ -1,5 +1,4 @@
 #include <JsonLang.hpp>
-#include <iostream>
 
 PROGRAM_BEGIN
 
@@ -11,11 +10,8 @@ PROGRAM_BEGIN
     }
 
     JSON(obj1) = OBJECT {KEY(key)  : STRING("Hello")}
-    SET obj1 ASSIGN obj0
-    SET obj1 ASSIGN NULL
 
     JSON(obj2) = TRUE
-
     JSON(obj3) = ARRAY
     JSON(obj4) = ARRAY[STRING("HELLO")]
     JSON(obj5) = ARRAY[STRING("HELLO"),STRING("WORD")];

@@ -6,9 +6,17 @@
 
 namespace jsonlang
 {
-    // Printer
-    struct JsonVarPrinter {
-        JsonVarPrinter() = default;
+    // Singleton Printer
+    class JsonVarPrinter {
+    public:
+        // Delete copy constructor and assignment operator
+        JsonVarPrinter(const JsonVarPrinter&) = delete;
+        JsonVarPrinter& operator=(const JsonVarPrinter&) = delete;
+
+        static JsonVarPrinter& getInstance() {
+            static JsonVarPrinter printer;
+            return printer;
+        }
 
         JsonVarPrinter& operator,(const JsonVar& var) {
             std::cout << var.toString();
@@ -20,7 +28,12 @@ namespace jsonlang
                 std::cout << v.toString();
             return *this;
         }
+
+    private:
+        JsonVarPrinter() = default;
     };
+
 } // namespace jsonlang
 
 #endif //! JSONPRINTER_HPP
+

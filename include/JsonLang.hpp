@@ -6,11 +6,13 @@
 #include <JsonEraser.hpp>
 #include <json_kv_pair.hpp>
 
-#define PROGRAM_BEGIN int main(void) {
+#define PROGRAM_BEGIN int main(void) {  try {
 #define PROGRAM_END \
-    ;return 0; }
+    ;} catch (const std::runtime_error& e)\
+    {std::cerr << e.what() << std::endl;}\
+    return 0; }
 
-#define JSON(var)   ;jsonlang::JsonVar var
+#define JSON(var)   ;jsonlang::JsonVar var; jsonlang::JsonVarEraser::getInstance()+= var
 #define KEY(var)    jsonlang::KeyValue(#var) = 0 ? jsonlang::JsonVar()
 
 // Variable Values
@@ -18,16 +20,15 @@
 #define NUMBER(var) jsonlang::JsonVar(static_cast<double>(var))
 #define TRUE        jsonlang::JsonVar(true)
 #define FALSE       jsonlang::JsonVar(false)
-#define ARRAY       jsonlang::JsonVar(0,0)
-#define OBJECT      jsonlang::JsonVar
+#define ARRAY       jsonlang::JsonVarEraser::getInstance()= jsonlang::JsonVar(0,0)
+#define OBJECT      jsonlang::JsonVarEraser::getInstance()= jsonlang::JsonVar
 
 #define SET         ;
 #define ASSIGN      =
 #define APPEND      <<
 
-#define PRINT       ;jsonlang::JsonVarPrinter(),
-#define ERASE       ;jsonlang::JsonVarEraser(),
-
+#define PRINT       ;jsonlang::JsonVarPrinter::getInstance(),
+#define ERASE       ;jsonlang::JsonVarEraser::getInstance(),
 
 #define TYPE_OF(var)        var.typeOf()
 #define IS_EMPTY(var)       var.isEmpty()
