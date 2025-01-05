@@ -12,7 +12,7 @@
     {std::cerr << e.what() << std::endl;}\
     return 0; }
 
-#define JSON(var)   ;jsonlang::JsonVar var; jsonlang::JsonVarEraser::getInstance()+= var
+#define JSON(var)   ;jsonlang::JsonVar var
 #define KEY(var)    jsonlang::KeyValue(#var) = 0 ? jsonlang::JsonVar()
 
 // Variable Values
@@ -20,15 +20,15 @@
 #define NUMBER(var) jsonlang::JsonVar(static_cast<double>(var))
 #define TRUE        jsonlang::JsonVar(true)
 #define FALSE       jsonlang::JsonVar(false)
-#define ARRAY       jsonlang::JsonVarEraser::getInstance()= jsonlang::JsonVar(0,0)
-#define OBJECT      jsonlang::JsonVarEraser::getInstance()= jsonlang::JsonVar
+#define ARRAY       jsonlang::JsonVar(0,0)
+#define OBJECT      jsonlang::JsonVar
 
 #define SET         ;
 #define ASSIGN      =
 #define APPEND      <<
 
 #define PRINT       ;jsonlang::JsonVarPrinter::getInstance(),
-#define ERASE       ;jsonlang::JsonVarEraser::getInstance(),
+#define ERASE       ;
 
 #define TYPE_OF(var)        var.typeOf()
 #define IS_EMPTY(var)       var.isEmpty()

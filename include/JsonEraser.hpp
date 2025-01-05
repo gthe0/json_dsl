@@ -21,31 +21,11 @@ public:
 
     // Method to add a reference
     JsonVar& operator=(JsonVar& var) {
-
-        if(var.type_ == JsonVar::kArray || var.type_ == JsonVar::kObject)
-        {
-            referenceMap.insert({ nextId++,var });
-            var.setReferenceId(nextId);
-
-            if(var.type_ == JsonVar::kArray) var.ArrayRefIdSetter();
-            else                             var.ObjectRefCountSetter();
-        }
-
         return var; 
     }
 
     // Method to add a reference
     JsonVar& operator+=(JsonVar& var) {
-
-        if (var.type_ == JsonVar::kArray || var.type_ == JsonVar::kObject)
-        {
-            var.setReferenceId(nextId);
-            referenceMap.insert({ nextId,var });
-
-            if (var.type_ == JsonVar::kArray) var.ArrayRefIdSetter();
-            else                              var.ObjectRefCountSetter();
-        }
-
         return var;
     }
 
@@ -60,8 +40,6 @@ private:
 
     // Map to store references
     std::map<int, JsonVar&> referenceMap;
-
-    int nextId = 0;
 };
 
 } // namespace jsonlang

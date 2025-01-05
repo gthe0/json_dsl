@@ -21,6 +21,7 @@ class JsonVar
 
 public:
 
+    JsonVar(std::nullptr_t)          :type_(JsonVar::kNull), num_(0){}
     // Constructors
     explicit JsonVar()               : type_(JsonVar::kObject) { new(&object_) JsonObject(); }
     explicit JsonVar(double num)     : type_(JsonVar::kNumber), num_(num){}
@@ -57,53 +58,6 @@ public:
 
    ~JsonVar() { cleanup(); };
 
-    // Overloaded Operators
-   // Implicit number to JsonVar conversion is prohibited
-   // If the number passed is 0 then I assume that is a NULL
-    JsonVar& operator=(int num)
-    {
-        if(num != NULL)
-        {
-            throw std::runtime_error("Error: Implicit Number to JsonVar convertion is prohibited!");
-        }
-
-        if(inInitialization_ == false)
-        {
-            throw std::runtime_error("Error: Assign Operator can only be used during inInitialization");
-        }
-
-
-        cleanup();
-        type_ = JsonVar::kNull;
-        inInitialization_ = false;
-        return *this;
-    }
-
-    // Copy operator
-    JsonVar& operator=(const JsonVar& other)
-    {
-        if(inInitialization_ == false)
-        {
-            throw std::runtime_error("Error: Assign Operator can only be used during inInitialization");
-        }
-
-        cleanup();
-        type_ = other.type_;
-        switch (type_)
-        {
-        case kString: new (&str_) JsonString(other.str_); break;
-        case kNumber: num_ = other.num_; break;
-        case kBoolean: bool_ = other.bool_; break;
-        case kObject: new (&object_) JsonObject(other.object_);  break;
-        case kArray: new (&array_) JsonArray(other.array_); break;
-        default: break;
-        }
-
-        inInitialization_ = false;
-        refId_ = other.refId_;
-        return *this;
-    }
-
     // BEGIN: These are used for Array Creation and Printing
     JsonArray operator,(const JsonVar& rhs)
     {
@@ -131,7 +85,6 @@ public:
         type_ = JsonVar::kArray;
         array_ = std::move(rhs);
 
-
         return *this;
     }
 
@@ -141,7 +94,6 @@ public:
 
         type_ = JsonVar::kArray;
         array_.push_back(rhs);
-
 
         return *this; 
     }
@@ -458,36 +410,9 @@ public:
             
         return JsonVar(static_cast<double>(1));
     }
-
-    void setReferenceId(int refcount)
-    { 
-        refId_ = refcount;
-    }
-    
-    int getReferenceId()
-    {
-        return refId_;
-    }
-
-    // Setters of the Refcounter of the various
-    // JsonVars inside the Containers
-    void ArrayRefIdSetter()
-    {
-        if(type_ == JsonVar::kArray) return;
-        for (JsonVar& json : array_) {
-            json.setReferenceId(refId_);
-        }
-    }
-
-    void ObjectRefCountSetter()
-    {
-        if(type_ == JsonVar::kObject) return;
-        for (auto& json : object_) {
-            json.second.setReferenceId(refId_);
-        }
-    }
-
     // END Utility functions
+
+private:
 
     // All Json Types
     enum
@@ -500,7 +425,6 @@ public:
         kArray
     } type_;
 
-private:
     // All the values that a JsonVar can hold
     union
     {   
@@ -510,10 +434,6 @@ private:
         JsonObject  object_;
         JsonArray   array_;
     };
-
-    // Used to make assignment operations work properly
-    bool inInitialization_ = true;
-    int  refId_ = -1;
 
     // Cleanup function for union types
     void cleanup()
