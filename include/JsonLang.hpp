@@ -28,7 +28,7 @@
 #define APPEND      <<
 
 #define PRINT       ;jsonlang::JsonVarPrinter::getInstance(),
-#define ERASE       ;
+#define ERASE       ;jsonlang::JsonVarEraser::getInstance()=
 
 #define TYPE_OF(var)        var.typeOf()
 #define IS_EMPTY(var)       var.isEmpty()

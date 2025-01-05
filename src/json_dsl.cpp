@@ -19,14 +19,17 @@ PROGRAM_BEGIN
     JSON(obj7) = NUMBER(10.2)
 
     JSON(obj8) = NULL
-
-    PRINT obj0, obj1, obj2, STRING("   AAAAAAAAA\n")
-    PRINT obj3, obj4
-    PRINT obj5
+    PRINT obj0, obj1, obj2, STRING("   AAAAAAAAA\n"), obj0["key2"]["key1"]* obj7, STRING("   AAAAAAAAA\n")
+    PRINT obj3, obj4, HAS_KEY(obj0, "key2")
+    PRINT obj5, STRING("\n\n")
     PRINT obj6
     PRINT STRING("\n\n"), obj8
 
-    PRINT obj5[1], obj0["key2"], IS_EMPTY(obj0), IS_EMPTY(obj6), obj7 * obj0["key2"]["key1"], STRING("   "), obj7
+    PRINT STRING("\n"), obj5, STRING("\n\n")
+
+    ERASE obj5[1]
+
+    PRINT obj5, STRING("\n\n")
 
 
 PROGRAM_END

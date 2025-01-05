@@ -19,27 +19,14 @@ public:
         return eraser;
     }
 
-    // Method to add a reference
-    JsonVar& operator=(JsonVar& var) {
-        return var; 
-    }
-
-    // Method to add a reference
-    JsonVar& operator+=(JsonVar& var) {
-        return var;
-    }
-
     // Overload operator to erase based on JsonRef
-    JsonVarEraser& operator,(JsonVar& JsonRef) {
-
+    JsonVarEraser& operator=(JsonVar& var) {
+        var.erase();
         return *this;
     }
 private:
     // Private constructor to prevent instantiation
     JsonVarEraser() = default;
-
-    // Map to store references
-    std::map<int, JsonVar&> referenceMap;
 };
 
 } // namespace jsonlang

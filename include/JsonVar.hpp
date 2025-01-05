@@ -16,8 +16,12 @@ class JsonVar
 {
     // Json definitions 
     using JsonString = std::string;
+
     using JsonArray  = std::vector<JsonVar>;
     using JsonObject = std::map<std::string,JsonVar>;
+
+    using JsonArrayNode = std::pair<JsonVar&,int>;
+    using JsonObjectNode = std::pair<JsonVar&,std::string>;
 
 public:
 
@@ -40,7 +44,6 @@ public:
             object_.insert({ kv_pair.key_,*(kv_pair.var_) });
         }
     }
-
     
     // Copy constructor
     JsonVar(const JsonVar &other): num_(0) {
@@ -52,11 +55,31 @@ public:
             case kBoolean: bool_ = other.bool_; break;
             case kObject: new (&object_) JsonObject(other.object_); break;
             case kArray: new (&array_) JsonArray(other.array_); break;
+            case kObjectNode: new (&objectNode_) JsonObjectNode(other.objectNode_); break;
+            case kArrayNode: new (&arrayNode_) JsonArrayNode(other.arrayNode_); break;
             default: break;
         }
     }
 
    ~JsonVar() { cleanup(); };
+
+   // Copy operatror
+   JsonVar& operator= (const JsonVar& other) {
+       type_ = other.type_;
+       switch (type_)
+       {
+       case kString: new (&str_) JsonString(other.str_); break;
+       case kNumber: num_ = other.num_; break;
+       case kBoolean: bool_ = other.bool_; break;
+       case kObject: new (&object_) JsonObject(other.object_); break;
+       case kArray: new (&array_) JsonArray(other.array_); break;
+       case kArrayNode: new (&arrayNode_) JsonArrayNode(other.arrayNode_); break;
+       case kObjectNode: new (&objectNode_) JsonObjectNode(other.objectNode_); break;
+       default: break;
+       }
+
+       return *this;
+   }
 
     // BEGIN: These are used for Array Creation and Printing
     JsonArray operator,(const JsonVar& rhs)
@@ -100,7 +123,7 @@ public:
     // END
 
     // BEGIN Access Operators
-    JsonVar& operator[](const int index)
+    JsonVar operator[](const int index)
     {
         if (type_ != kArray)
         {
@@ -112,23 +135,30 @@ public:
             throw std::runtime_error("Array out of bounds");
         }
 
-        return array_[index];
+        JsonVar node = JsonVar();
+        node.cleanup();
+
+        node.type_ = kArrayNode;
+        new (&node.arrayNode_) JsonArrayNode({*this, index});
+
+        return node;
     }
 
-    JsonVar& operator[](const std::string name)
+    JsonVar operator[](const std::string name)
     {
-        if (type_ != kObject)
+        JsonVar& obj_node = extractVal();
+        if (obj_node.type_ != kObject)
         {
             throw std::runtime_error("The Json Variable is not an Object!");
         }
 
-        auto it = object_.find(name);
-        if (it == object_.end()) 
-        { 
-            throw std::runtime_error("Key not found in JSON object!");
-        } 
-        
-        return it->second;
+        JsonVar node = JsonVar();
+        node.cleanup();
+
+        node.type_ = kObjectNode;
+        new (&node.objectNode_) JsonObjectNode({obj_node, name });
+
+        return node;
     }
     // END Access Operators
 
@@ -141,7 +171,10 @@ public:
     // are implemented
     JsonVar operator==(const JsonVar& rvalue)
     {
-        bool result = isEqual(rvalue);
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = rvalue.extractVal();
+
+        bool result = lval.isEqual(rval);
         return JsonVar(result);
     }
 
@@ -154,32 +187,40 @@ public:
 
     JsonVar operator&&(const JsonVar& rvalue)
     {
-        if(type_ != JsonVar::kBoolean || rvalue.type_ != type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = rvalue.extractVal();
+
+        if(lval.type_ != JsonVar::kBoolean || lval.type_ != rval.type_)
         {
              throw std::runtime_error( "Error: logical operators can only be used between booleans");
         }
 
-        return JsonVar(rvalue.bool_ && bool_);
+        return JsonVar(lval.bool_ && rval.bool_);
     }
 
     JsonVar operator||(const JsonVar& rvalue)
     {
-        if(type_ != JsonVar::kBoolean || rvalue.type_ != type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = rvalue.extractVal();
+
+        if(lval.type_ != JsonVar::kBoolean || lval.type_ != rval.type_)
         {
              throw std::runtime_error( "Error: logical operators can only be used between booleans");
         }
 
-        return JsonVar(rvalue.bool_ || bool_);
+        return JsonVar(lval.bool_ || rval.bool_);
     }
 
     JsonVar operator!()
     {
-        if(type_ != JsonVar::kBoolean)
+        const JsonVar& lval = extractVal();
+
+        if(lval.type_ != JsonVar::kBoolean)
         {
             throw std::runtime_error("Error: logical operators can only be used between booleans");
         }
 
-        return JsonVar(!bool_);
+        return JsonVar(!lval.bool_);
     }
 
     //END Logical operators
@@ -189,37 +230,49 @@ public:
     
     JsonVar operator*(const JsonVar& number)
     {
-        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = number.extractVal();
+
+        if(lval.type_ != JsonVar::kNumber || lval.type_!=rval.type_)
         {
              throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");
         }
 
-        return JsonVar(static_cast<double>(number.num_ * num_));
+        return JsonVar(static_cast<double>(lval.num_ * rval.num_));
     }
 
     JsonVar operator/(const JsonVar& number)
     {
-        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = number.extractVal();
+
+        if(lval.type_ != JsonVar::kNumber || lval.type_!=rval.type_)
         {
              throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");
         }
 
-        return JsonVar(static_cast<double>(number.num_ / num_));
+        return JsonVar(static_cast<double>(lval.num_ / rval.num_));
     }
 
     JsonVar operator-(const JsonVar& number)
     {
-        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = number.extractVal();
+
+        if(lval.type_ != JsonVar::kNumber || lval.type_!=rval.type_)
         {
              throw std::runtime_error( "Error: arithmentic operators can only be used between numbers" );
         }
 
-        return JsonVar(static_cast<double>(number.num_ - num_));
+        return JsonVar(static_cast<double>(static_cast<double>(lval.num_ - rval.num_)));
     }
 
     JsonVar operator%(const JsonVar& number)
     {
-        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = number.extractVal();
+
+        if(lval.type_ != JsonVar::kNumber || lval.type_!=rval.type_)
         {
              throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");          
         }
@@ -227,73 +280,88 @@ public:
         // It can only be used between integers
         return JsonVar(
             static_cast<double>(
-            static_cast<int>(number.num_) % static_cast<int>(num_)));
+            static_cast<int>(lval.num_) % static_cast<int>(rval.num_)));
     }
 
     JsonVar operator>(const JsonVar& number)
     {
-        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = number.extractVal();
+
+        if(lval.type_ != JsonVar::kNumber || lval.type_!=rval.type_)
         {
              throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");            
         }
 
-        return JsonVar(number.num_ > num_);
+        return JsonVar(lval.num_ > rval.num_);
     }
 
     JsonVar operator<(const JsonVar& number)
     {
-        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = number.extractVal();
+
+        if(lval.type_ != JsonVar::kNumber || lval.type_!=rval.type_)
         {
              throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");
         }
 
-        return JsonVar(number.num_ < num_);
+        return JsonVar(lval.num_ < rval.num_);
     }
 
     JsonVar operator>=(const JsonVar& number)
     {
-        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = number.extractVal();
+
+        if(lval.type_ != JsonVar::kNumber || lval.type_!=rval.type_)
         {
              throw std::runtime_error( "Error: arithmentic operators can only be used between numbers" );
         }
 
-        return JsonVar(number.num_ >= num_);
+        return JsonVar(lval.num_ >= rval.num_);
     }
 
     JsonVar operator<=(const JsonVar& number)
     {
-        if(type_ != JsonVar::kNumber || type_!=number.type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rval = number.extractVal();
+
+        if(lval.type_ != JsonVar::kNumber || lval.type_!=rval.type_)
         {
              throw std::runtime_error( "Error: arithmentic operators can only be used between numbers");
         }
 
-        return JsonVar(number.num_ <= num_);
+        return JsonVar(lval.num_ <= rval.num_);
     }
 
     // END Arithmentic operators
 
     // BEGIN + Operator
     
-    JsonVar operator+(const JsonVar& rhs)
+    JsonVar operator+(const JsonVar& rvalue)
     {
-        if (rhs.type_ != type_)
+        const JsonVar& lval = extractVal();
+        const JsonVar& rhs = rvalue.extractVal();
+
+        if (rhs.type_ != lval.type_)
         {
             throw std::runtime_error("Error, Cannot use + with Variables of different types!");
         }
     
-        switch (type_)
+        switch (lval.type_)
         {
             case kNumber:
                 {
-                    return JsonVar(static_cast<double>(rhs.num_ + num_));
+                    return JsonVar(static_cast<double>(rhs.num_ + lval.num_));
                 }
             case kString:   
                 {
-                    return JsonVar(static_cast<std::string>(rhs.str_ + str_));
+                    return JsonVar(static_cast<std::string>(rhs.str_ + lval.str_));
                 }
             case kArray:  
                 {
-                    JsonVar temp = *this;
+                    JsonVar temp = lval;
 
                     for (const JsonVar& rhs_value : rhs.array_) {
                         bool doesExist = false;
@@ -311,7 +379,7 @@ public:
                 }
             case kObject:
                 {
-                    JsonVar temp = *this;
+                    JsonVar temp = lval;
                     for (const auto& pair : rhs.object_)
                     {
                         temp.object_.insert(pair);
@@ -361,6 +429,14 @@ public:
                 result += " ]";
                 break;
             }
+            case kArrayNode:
+            case kObjectNode:
+            {
+                const JsonVar& node = extractVal();
+                result = node.toString();
+
+                break;
+            }
             default: result = "null";
         }
         return result;
@@ -375,13 +451,15 @@ public:
 
         switch (type_)
         {
-        case kNumber:    result = "number";  break;
-        case kString:    result = "string"; break;
-        case kBoolean:   result = "boolean"; break;
-        case kArray:     result = "array"; break;
-        case kObject:    result = "object"; break;
-        case kNull:      result = "null"; break;
-        default:         result = "";
+        case kNumber:       result = "number";  break;
+        case kString:       result = "string"; break;
+        case kBoolean:      result = "boolean"; break;
+        case kArray:        result = "array"; break;
+        case kObject:       result = "object"; break;
+        case kNull:         result = "null"; break;
+        case kObjectNode:   result = "temp"; break;
+        case kArrayNode:    result = "temp"; break;
+        default:            result = "";
         }
 
         return JsonVar(static_cast<std::string>(result));
@@ -410,6 +488,20 @@ public:
             
         return JsonVar(static_cast<double>(1));
     }
+    
+    void erase()
+    {
+        switch (type_)
+        {
+        case kObject:     object_.clear(); break;
+        case kArray:      array_.clear(); break;
+        case kArrayNode:  arrayNode_.first.array_.erase(arrayNode_.first.array_.begin() + arrayNode_.second); break;
+        case kObjectNode: objectNode_.first.object_.erase(objectNode_.second); break;
+        default:
+            throw std::runtime_error("Error: erase can only be used with Arrays, Objects and their Nodes!");
+        }
+    }
+    
     // END Utility functions
 
 private:
@@ -422,18 +514,48 @@ private:
         kString,
         kBoolean,
         kObject,
-        kArray
+        kArray,
+        kArrayNode,
+        kObjectNode,
     } type_;
 
     // All the values that a JsonVar can hold
     union
     {   
-        bool        bool_;
-        double      num_;
-        JsonString  str_;
-        JsonObject  object_;
-        JsonArray   array_;
+        bool            bool_;
+        double          num_;
+        JsonString      str_;
+        JsonObject      object_;
+        JsonArray       array_;
+        JsonArrayNode   arrayNode_;
+        JsonObjectNode  objectNode_;
     };
+
+    JsonVar &extractVal() const {
+
+        // If it's a Node, we need to extract it first
+        if (type_ == kArrayNode)
+        {
+            if (arrayNode_.second < arrayNode_.first.array_.size() || 0 <= arrayNode_.first.array_.size())
+            {
+                throw std::runtime_error("Array out of bounds");
+            }
+
+            return arrayNode_.first.array_[arrayNode_.second];
+        } 
+        else if (type_ == kObjectNode) 
+        {
+            auto it = objectNode_.first.object_.find(objectNode_.second);
+            if (it == objectNode_.first.object_.end()) 
+            {
+                throw std::runtime_error("Error: Key not found in JSON object!");
+            }
+
+            return it->second;
+        }
+
+        return *(JsonVar*)this;
+    }
 
     // Cleanup function for union types
     void cleanup()
