@@ -2,7 +2,6 @@
 
 PROGRAM_BEGIN
 
-
     JSON(obj0) = OBJECT {
         KEY(key)  : STRING("Hello"),
         KEY(key1) : STRING("WORLD"),
@@ -29,7 +28,9 @@ PROGRAM_BEGIN
 
     ERASE obj5[1]
 
-    PRINT obj5, STRING("\n\n")
+    ERASE obj0["key2"]["key1"]
 
+    PRINT obj5, STRING("\n\n")
+    PRINT obj0, STRING("\n")
 
 PROGRAM_END

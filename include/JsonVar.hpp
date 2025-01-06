@@ -63,24 +63,6 @@ public:
 
    ~JsonVar() { cleanup(); };
 
-   // Copy operatror
-   JsonVar& operator= (const JsonVar& other) {
-       type_ = other.type_;
-       switch (type_)
-       {
-       case kString: new (&str_) JsonString(other.str_); break;
-       case kNumber: num_ = other.num_; break;
-       case kBoolean: bool_ = other.bool_; break;
-       case kObject: new (&object_) JsonObject(other.object_); break;
-       case kArray: new (&array_) JsonArray(other.array_); break;
-       case kArrayNode: new (&arrayNode_) JsonArrayNode(other.arrayNode_); break;
-       case kObjectNode: new (&objectNode_) JsonObjectNode(other.objectNode_); break;
-       default: break;
-       }
-
-       return *this;
-   }
-
     // BEGIN: These are used for Array Creation and Printing
     JsonArray operator,(const JsonVar& rhs)
     {
@@ -125,21 +107,17 @@ public:
     // BEGIN Access Operators
     JsonVar operator[](const int index)
     {
-        if (type_ != kArray)
+        JsonVar& array_node = extractVal();
+        if (array_node.type_ != kArray)
         {
             throw std::runtime_error("The Json Variable is not an Array!");
-        }
-
-        if (index >= array_.size() || index < 0)
-        {
-            throw std::runtime_error("Array out of bounds");
         }
 
         JsonVar node = JsonVar();
         node.cleanup();
 
         node.type_ = kArrayNode;
-        new (&node.arrayNode_) JsonArrayNode({*this, index});
+        new (&node.arrayNode_) JsonArrayNode({array_node, index});
 
         return node;
     }
@@ -445,7 +423,7 @@ public:
     // BEGIN Utility functions
 
     // Return the type of the variable
-    JsonVar typeOf()
+    JsonString typeOf()
     {
         std::string result;
 
@@ -462,31 +440,31 @@ public:
         default:            result = "";
         }
 
-        return JsonVar(static_cast<std::string>(result));
+        return (result);
     }
 
     // Returns whether a key is found in an object
-    JsonVar hasKey(std::string Key)
+    bool hasKey(std::string Key)
     {
-        if (type_ != JsonVar::kObject)  return JsonVar(false);
-        return JsonVar(object_.find(Key) != object_.end());
+        if (type_ != JsonVar::kObject)  return false;
+        return (object_.find(Key) != object_.end());
     }
     
     // Checks whether an array or an object is empty
-    JsonVar isEmpty()
+    bool isEmpty()
     {
-        if (type_ == JsonVar::kObject)          return  JsonVar(object_.empty());
-        if (type_ == JsonVar::kArray)           return  JsonVar(array_.empty());
+        if (type_ == JsonVar::kObject)          return  (object_.empty());
+        if (type_ == JsonVar::kArray)           return  (array_.empty());
             
-        return JsonVar(false);
+        return (false);
     }
 
-    JsonVar sizeOf()
+    size_t sizeOf()
     {
-        if (type_ == kObject) return JsonVar(static_cast<double>(object_.size()));
-        if (type_ == kArray)  return JsonVar(static_cast<double>(array_.size()));
+        if (type_ == kObject) return (object_.size());
+        if (type_ == kArray)  return (array_.size());
             
-        return JsonVar(static_cast<double>(1));
+        return (1);
     }
     
     void erase()
@@ -495,7 +473,7 @@ public:
         {
         case kObject:     object_.clear(); break;
         case kArray:      array_.clear(); break;
-        case kArrayNode:  arrayNode_.first.array_.erase(arrayNode_.first.array_.begin() + arrayNode_.second); break;
+        case kArrayNode:  ArrayNodeErasure(); break;
         case kObjectNode: objectNode_.first.object_.erase(objectNode_.second); break;
         default:
             throw std::runtime_error("Error: erase can only be used with Arrays, Objects and their Nodes!");
@@ -618,6 +596,29 @@ private:
         }
 
         return true;
+    }
+
+    void ArrayNodeErasure()
+    {
+        if (type_ != kArrayNode)
+        {
+            throw std::runtime_error("This function can only be used with an Array Node!");
+        }
+
+        if (arrayNode_.second < 0 || arrayNode_.second > arrayNode_.first.sizeOf())
+        {
+            throw std::runtime_error("Array out of bounds");
+        }
+
+        std::vector<JsonVar> newVec;
+        newVec.reserve(arrayNode_.first.sizeOf() - 1);
+
+        for (size_t i = 0; i < arrayNode_.first.sizeOf(); ++i)
+        {
+            if (i != arrayNode_.second) newVec.push_back(arrayNode_.first.array_[i]);
+        }
+
+        arrayNode_.first.array_ = std::move(newVec);
     }
 };
 

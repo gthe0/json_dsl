@@ -23,12 +23,6 @@ namespace jsonlang
             return *this;
         }
 
-        JsonVarPrinter& operator,(const std::vector<JsonVar> vars) {
-            for (const JsonVar& v : vars)
-                std::cout << v.toString();
-            return *this;
-        }
-
     private:
         JsonVarPrinter() = default;
     };

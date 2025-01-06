@@ -2,7 +2,6 @@
 #define JSONERASER_HPP
 
 #include <JsonVar.hpp>
-#include <map>
 
 namespace jsonlang
 {
@@ -24,6 +23,11 @@ public:
         var.erase();
         return *this;
     }
+    
+    void operator,(JsonVar& var) {
+        throw std::runtime_error("Error: ERASE can only be used with 1 argument");
+    }
+
 private:
     // Private constructor to prevent instantiation
     JsonVarEraser() = default;
