@@ -15,7 +15,7 @@ public:
     JsonVarSetter(const JsonVarSetter&) = default;
     JsonVarSetter& operator=(const JsonVarSetter&) = delete;
 
-    JsonVarSetter& operator=(JsonVar& var) {
+    JsonVarSetter& operator=(const JsonVar& var) {
         
         if(lhs != nullptr) {
             throw std::runtime_error("Error: SET is used only with 1 argument!"); 
@@ -25,13 +25,14 @@ public:
         return *this;
     }
 
-    JsonVarSetter& operator,(JsonVar& var) {
+    JsonVarSetter& operator,(const JsonVar& var) {
 
         if(command == nullptr && lhs != nullptr) {
             throw std::runtime_error("Error: SET does not accept multiple arguments!"); 
         }
 
-        command->execute(lhs,var);
+        command->execute(const_cast<JsonVar*>(lhs),
+                         const_cast<JsonVar&>(var));
         return *this;
     }
 
@@ -51,7 +52,7 @@ public:
 
 
 private:
-    JsonVar* lhs = nullptr;
+    const JsonVar* lhs = nullptr;
     SetCommand* command = nullptr;
 };
 

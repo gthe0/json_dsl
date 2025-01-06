@@ -13,11 +13,11 @@ struct KeyValue
 {
     using JsonKey = std::string;
 
-    JsonKey     key_;
-    JsonVar*    var_;
+          JsonKey     key_;
+    const JsonVar*    var_;
 
     KeyValue(JsonKey key): key_(std::move(key)), var_(nullptr) {}
-    KeyValue& operator=(JsonVar& var)
+    KeyValue& operator=(const JsonVar& var)
     {
         var_ = &var;
         return *this;

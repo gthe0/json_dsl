@@ -19,12 +19,13 @@ public:
     }
 
     // Overload operator to erase based on JsonRef
-    JsonVarEraser& operator=(JsonVar& var) {
-        var.erase();
+    JsonVarEraser& operator=(const JsonVar& var) {
+        JsonVar& temp = const_cast<JsonVar&>(var);
+        temp.erase();
         return *this;
     }
 
-    void operator,(JsonVar& var) {
+    void operator,(const JsonVar& var) {
         throw std::runtime_error("Error: ERASE can only be used with 1 argument");
     }
 
