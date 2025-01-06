@@ -22,8 +22,26 @@ public:
             throw std::runtime_error("Error: Assignment of multiple values is prohibited");
         }
 
-        /*Complete the Code here*/
+        if (lhs->type_ == JsonVar::kObjectNode && !lhs->hasKey(lhs->objectNode_.second))
+        {
+            lhs->objectNode_.first.object_.insert({lhs->objectNode_.second,JsonVar()});
+        }
+
+        JsonVar& lval = lhs->extractVal();
+        JsonVar& rval = rhs.extractVal();
         
+        lval.cleanup();
+        lval.type_ = rval.type_;
+        
+        switch (lval.type_)
+        {
+        case (JsonVar::kString): new (&lval.str_) JsonVar::JsonString(rval.str_); break;
+        case (JsonVar::kNumber): lval.num_ = rval.num_; break;
+        case (JsonVar::kBoolean): lval.bool_ = rval.bool_; break;
+        case (JsonVar::kObject): new (&lval.object_) JsonVar::JsonObject(rval.object_); break;
+        case (JsonVar::kArray): new (&lval.array_) JsonVar::JsonArray(rval.array_); break;
+        default: break;
+        }
 
         hasSet = true;
     }
