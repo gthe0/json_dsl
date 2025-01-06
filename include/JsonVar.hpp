@@ -439,8 +439,6 @@ public:
         case kArray:        result = "array"; break;
         case kObject:       result = "object"; break;
         case kNull:         result = "null"; break;
-        case kObjectNode:   result = "temp"; break;
-        case kArrayNode:    result = "temp"; break;
         default:            result = "";
         }
 
@@ -518,7 +516,7 @@ private:
         // If it's a Node, we need to extract it first
         if (type_ == kArrayNode)
         {
-            if (arrayNode_.second < arrayNode_.first.array_.size() || 0 <= arrayNode_.first.array_.size())
+            if (arrayNode_.second >= arrayNode_.first.array_.size() || 0 > arrayNode_.second)
             {
                 throw std::runtime_error("Array out of bounds");
             }
@@ -609,7 +607,7 @@ private:
             throw std::runtime_error("This function can only be used with an Array Node!");
         }
 
-        if (arrayNode_.second < 0 || arrayNode_.second > arrayNode_.first.sizeOf())
+        if (arrayNode_.second < 0 || arrayNode_.second >= arrayNode_.first.sizeOf())
         {
             throw std::runtime_error("Array out of bounds");
         }

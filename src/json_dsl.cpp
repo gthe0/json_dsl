@@ -32,6 +32,15 @@ PROGRAM_BEGIN
 
     SET obj0 ASSIGN NUMBER(4)
     SET obj5 APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
+    JSON(array) = OBJECT{ KEY(key) : ARRAY[NUMBER(10)]}
+
+        PRINT array, STRING("\n\n")
+
+        SET array["key"] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
+        SET array["key"][3] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
+        
+        PRINT array, STRING("\n\n")
+
 
     PRINT obj5, STRING("\n\n")
     PRINT obj0, STRING("\n")
