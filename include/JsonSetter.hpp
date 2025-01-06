@@ -21,7 +21,7 @@ public:
             throw std::runtime_error("Error: SET is used only with 1 argument!"); 
         }
 
-        lhs = &var;
+        lhs = &const_cast<JsonVar&>(var);
         return *this;
     }
 
@@ -31,12 +31,11 @@ public:
             throw std::runtime_error("Error: SET does not accept multiple arguments!"); 
         }
 
-        command->execute(const_cast<JsonVar*>(lhs),
-                         const_cast<JsonVar&>(var));
+        command->execute(lhs, const_cast<JsonVar&>(var));
         return *this;
     }
 
-    JsonVarSetter& operator,(SetCommand& var) {
+    JsonVarSetter& operator,(const SetCommand& var) {
 
         if(command != nullptr) {
             throw std::runtime_error("Error: SET multiple commands defined!"); 
@@ -46,13 +45,13 @@ public:
             throw std::runtime_error("Error: SET was not given a left handside value!"); 
         }
 
-        command = &var;
+        command = &const_cast<SetCommand&>(var);
         return *this;
     }
 
 
 private:
-    const JsonVar* lhs = nullptr;
+    JsonVar* lhs = nullptr;
     SetCommand* command = nullptr;
 };
 
