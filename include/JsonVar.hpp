@@ -14,6 +14,10 @@ namespace jsonlang
 
 class JsonVar
 {
+    // Friendly Classes
+    friend class AssignSetCommand; 
+    friend class AppendSetCommand;
+
     // Json definitions 
     using JsonString = std::string;
 

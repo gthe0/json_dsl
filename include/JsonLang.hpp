@@ -5,6 +5,8 @@
 #include <JsonPrinter.hpp>
 #include <JsonEraser.hpp>
 #include <json_kv_pair.hpp>
+#include <JsonSetter.hpp>
+#include <JsonSetCommands.hpp>
 
 #define PROGRAM_BEGIN int main(void) {  try {
 #define PROGRAM_END \
@@ -23,9 +25,9 @@
 #define ARRAY       jsonlang::JsonVar(0,0)
 #define OBJECT      jsonlang::JsonVar
 
-#define SET         ;
-#define ASSIGN      =
-#define APPEND      <<
+#define SET         ;jsonlang::JsonVarSetter() = 
+#define ASSIGN      ,jsonlang::AssignSetCommand(),
+#define APPEND      ,jsonlang::AppendSetCommand(),
 
 #define PRINT       ;jsonlang::JsonVarPrinter::getInstance(),
 #define ERASE       ;jsonlang::JsonVarEraser::getInstance()=

@@ -23,7 +23,7 @@ public:
         var.erase();
         return *this;
     }
-    
+
     void operator,(JsonVar& var) {
         throw std::runtime_error("Error: ERASE can only be used with 1 argument");
     }

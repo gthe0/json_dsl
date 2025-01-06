@@ -30,6 +30,9 @@ PROGRAM_BEGIN
 
     ERASE obj0["key2"]["key1"]
 
+    SET obj0 ASSIGN NUMBER(4)
+    SET obj5 APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
+
     PRINT obj5, STRING("\n\n")
     PRINT obj0, STRING("\n")
 
