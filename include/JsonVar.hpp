@@ -70,19 +70,11 @@ public:
     // BEGIN: These are used for Array Creation and Printing
     JsonArray operator,(const JsonVar& rhs)
     {
-        if (this->isEqual(rhs))
-            return { *this };
-        else
-            return {*this, rhs};
+        return {*this, rhs};
     }
 
     JsonArray operator,(JsonArray rhs)
     {
-        for (const auto& temp : rhs)
-        {
-            if (this->isEqual(temp)) return rhs;
-        }
-
         rhs.push_back(*this);
         return rhs;
     }
@@ -346,15 +338,7 @@ public:
                     JsonVar temp = lval;
 
                     for (const JsonVar& rhs_value : rhs.array_) {
-                        bool doesExist = false;
-                        for (const JsonVar& lhs_value : temp.array_) {
-                            if(lhs_value.isEqual(rhs_value))
-                            {
-                                doesExist = true;
-                                break;
-                            }
-                        }
-                        if(!doesExist) temp.array_.push_back(rhs_value);
+                       temp.array_.push_back(rhs_value);
                     }
 
                     return temp;

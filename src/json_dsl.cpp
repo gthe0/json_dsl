@@ -36,8 +36,9 @@ PROGRAM_BEGIN
 
         PRINT array, STRING("\n\n")
 
-        SET array["key"] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
-        SET array["key"][3] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
+        SET array["key"] APPEND NUMBER(4), NUMBER(5), NUMBER(5),obj5
+        PRINT array, STRING("\n\n")
+        SET array["key"][4] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
         
         PRINT array, STRING("\n\n")
 

@@ -43,16 +43,8 @@ public:
         {
             throw std::runtime_error("Error: Append operation can only be used with an Array");
         }
-
-        bool doesExist = false;
-        for (const JsonVar& lhs_value : lval.array_) {
-            if (lhs_value.isEqual(rval))
-            {
-                doesExist = true;
-                break;
-            }
-        }
-        if (!doesExist) lval.array_.push_back(rval);
+    
+        lval.array_.push_back(rval);
     }
 };
 
