@@ -448,15 +448,46 @@ public:
     {
         const JsonVar& lval = extractVal();
 
+    #ifdef TA_WAY
+
+        if (lval.type_ == kObject)
+        {
+            size_t result = 0;
+
+            for(const auto& pair: lval.object_)
+            {
+                if(pair.second.type_ != JsonVar::kNull) result++;
+            }
+
+            return (result == 0);
+        } 
+        
+        if (lval.type_ == kArray)
+        {
+            size_t result = 0;
+
+            for(const auto& array_node: lval.array_)
+            {
+                if(array_node.type_ != JsonVar::kNull) result++;
+            }
+
+            return (result == 0);
+        }
+    #else
+
         if (lval.type_ == JsonVar::kObject)          return  (lval.object_.empty());
         if (lval.type_ == JsonVar::kArray)           return  (lval.array_.empty());
-            
+
+    #endif  //! TA_WAY
+
         return (false);
     }
 
     size_t sizeOf()
     {
-        const JsonVar& lval = extractVal();
+    
+    const JsonVar& lval = extractVal();
+    #ifdef TA_WAY
 
         if (lval.type_ == kObject)
         {
@@ -480,7 +511,13 @@ public:
             }
 
             return result;
-        }  
+        }
+    #else
+    
+        if(lval.type_ == kArray)    return lval.array_.size();
+        if(lval.type_ == kObject)   return lval.object_.size();
+    
+    #endif //! TA_WAY
             
         return (1);
     }
