@@ -331,7 +331,7 @@ public:
                 }
             case kString:   
                 {
-                    return JsonVar(static_cast<std::string>(rhs.str_ + lval.str_));
+                    return JsonVar(static_cast<std::string>(lval.str_ + rhs.str_));
                 }
             case kArray:  
                 {
@@ -375,7 +375,7 @@ public:
             {
                 result = "{ ";
 
-                for (const auto &pair_ : object_)
+                for (auto &pair_ : object_)
                 {
                     result += "\"" + pair_.first + "\": " + pair_.second.toString() + ", ";
                 }
