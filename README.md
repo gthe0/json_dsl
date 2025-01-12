@@ -14,6 +14,10 @@ or
 
 The executable will be located inside the bin directory.
 
+[!WARNING]
+SIZE_OF and IS_EMPTY currently count the NULL value. We added an implementation where we do not.
+If you want to compile it using this, add the -DTA_WAY compiler option
+
 ## USING CMAKE
 Having CMAKE installed in your system, type:
 

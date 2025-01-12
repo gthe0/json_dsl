@@ -22,6 +22,9 @@ object: $(OBJ_FILES)
 compile: $(INCLUDE) $(SRC)/json_dsl.cpp $(BIN)
 	g++ -I $(INCLUDE) $(SRC)/**.cpp -o $(BIN)/test -std=c++11
 
+compile_ta: $(INCLUDE) $(SRC)/json_dsl.cpp $(BIN)
+	g++ -I $(INCLUDE) $(SRC)/**.cpp -DTA_WAY -o $(BIN)/test -std=c++11
+
 # Compile each source file into its object file individually
 $(BUILD_DIR)/%.o: $(SRC)/%.c | $(BUILD_DIR)
 	g++ -I $(INCLUDE) -c $< -o $@
