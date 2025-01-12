@@ -698,6 +698,18 @@ inline bool JsonVar_hasKey(JsonVar var,std::string key)
     return var.hasKey(key);
 }
 
+inline std::vector<JsonVar> operator,(std::vector<JsonVar> rhs, const JsonVar var)
+{
+    rhs.push_back(var);
+    return rhs;
+}
+
+inline std::vector<JsonVar> operator,(std::nullptr_t, const JsonVar var)
+{
+    return {NULL, var};
+}
+
+
 
 } // namespace jsonlang
 

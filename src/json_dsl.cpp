@@ -45,10 +45,14 @@ PROGRAM_BEGIN
     PRINT HAS_KEY(array, "key"), STRING("\n\n")
     SET array["key"][4] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
     
-    PRINT array, STRING("\n\n")
+    PRINT array, STRING("\n\n"), NULL
 
-
+    JSON(obj22) = ARRAY[NULL,NUMBER(1)] + ARRAY[NUMBER(1),NULL, STRING("HELLO WORLD")]
     PRINT obj5, STRING("\n\n")
     PRINT obj0, STRING("\n")
+    PRINT SIZE_OF(obj0), STRING("\n")
+    PRINT SIZE_OF(obj5), STRING("\n")
+    PRINT obj22, STRING("\n")
+    PRINT SIZE_OF(obj22), STRING("\n")
 
 PROGRAM_END
