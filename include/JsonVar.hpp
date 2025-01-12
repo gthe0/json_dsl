@@ -448,7 +448,7 @@ public:
     {
         const JsonVar& lval = extractVal();
 
-    #ifdef TA_WAY
+    #ifndef OTHER_WAY
 
         if (lval.type_ == kObject)
         {
@@ -478,7 +478,7 @@ public:
         if (lval.type_ == JsonVar::kObject)          return  (lval.object_.empty());
         if (lval.type_ == JsonVar::kArray)           return  (lval.array_.empty());
 
-    #endif  //! TA_WAY
+    #endif  //! OTHER_WAY
 
         return (false);
     }
@@ -487,7 +487,7 @@ public:
     {
     
     const JsonVar& lval = extractVal();
-    #ifdef TA_WAY
+    #ifndef OTHER_WAY
 
         if (lval.type_ == kObject)
         {
@@ -517,7 +517,7 @@ public:
         if(lval.type_ == kArray)    return lval.array_.size();
         if(lval.type_ == kObject)   return lval.object_.size();
     
-    #endif //! TA_WAY
+    #endif //! OTHER_WAY
             
         return (1);
     }
