@@ -437,7 +437,7 @@ public:
     // Returns whether a key is found in an object
     bool hasKey(std::string Key)
     {
-        const JsonVar& lval = extract();
+        JsonVar& lval = extractVal();
         
         if (lval.type_ != JsonVar::kObject)  return false;
         return (lval.object_.find(Key) != lval.object_.end());
@@ -458,8 +458,29 @@ public:
     {
         const JsonVar& lval = extractVal();
 
-        if (lval.type_ == kObject) return (lval.object_.size());
-        if (lval.type_ == kArray)  return (lval.array_.size());
+        if (lval.type_ == kObject)
+        {
+            size_t result = 0;
+
+            for(const auto& pair: lval.object_)
+            {
+                if(pair.second.type_ != JsonVar::kNull) result++;
+            }
+
+            return result;
+        } 
+        
+        if (lval.type_ == kArray)
+        {
+            size_t result = 0;
+
+            for(const auto& array_node: lval.array_)
+            {
+                if(array_node.type_ != JsonVar::kNull) result++;
+            }
+
+            return result;
+        }  
             
         return (1);
     }
@@ -617,33 +638,7 @@ private:
 
         arrayNode_.first.array_ = std::move(newVec);
     }
-
-        JsonVar &extract() const {
-
-        // If it's a Node, we need to extract it first
-        if (type_ == kArrayNode)
-        {
-            if (arrayNode_.second >= arrayNode_.first.array_.size() || 0 > arrayNode_.second)
-            {
-                throw std::runtime_error("Array out of bounds");
-            }
-
-            return arrayNode_.first.array_[arrayNode_.second];
-        } 
-        else if (type_ == kObjectNode) 
-        {
-            auto it = objectNode_.first.object_.find(objectNode_.second);
-            if (it == objectNode_.first.object_.end()) 
-            {
-                return *(JsonVar*)this;
-            }
-
-            return it->second;
-        }
-
-        return *(JsonVar*)this;
-    }
-
+    
 };
 
 

@@ -5,7 +5,7 @@ PROGRAM_BEGIN
     JSON(obj0) = OBJECT {
         KEY(key)  : STRING("Hello"),
         KEY(key1) : STRING("WORLD"),
-        KEY(key2) : OBJECT{ KEY(key1):NUMBER(2), KEY(key2):NUMBER(2)}
+        KEY(key2) : OBJECT{ KEY(key1):NUMBER(2), KEY(key2):NUMBER(2), KEY(null):NULL}
     }
 
     JSON(obj1) = OBJECT {KEY(key)  : STRING("Hello")}
@@ -24,6 +24,7 @@ PROGRAM_BEGIN
     PRINT obj6
     PRINT STRING("\n\n"), obj8
 
+    PRINT NULL
     PRINT SIZE_OF(obj0["key2"])
 
     PRINT STRING("\n"), obj5, STRING("\n\n")
@@ -36,13 +37,13 @@ PROGRAM_BEGIN
     SET obj5 APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
     JSON(array) = OBJECT{ KEY(key) : ARRAY[NUMBER(10)]}
 
-        PRINT array, STRING("\n\n")
+    PRINT array, STRING("\n\n")
 
-        SET array["key"] APPEND NUMBER(4), NUMBER(5), NUMBER(5),obj5
-        PRINT array, STRING("\n\n")
-        SET array["key"][4] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
-        
-        PRINT array, STRING("\n\n")
+    SET array["key"] APPEND NUMBER(4), NUMBER(5), NUMBER(5),obj5
+    PRINT array, STRING("\n\n")
+    SET array["key"][4] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
+    
+    PRINT array, STRING("\n\n")
 
 
     PRINT obj5, STRING("\n\n")

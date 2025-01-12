@@ -22,7 +22,7 @@ public:
             throw std::runtime_error("Error: Assignment of multiple values is prohibited");
         }
 
-        if (lhs->type_ == JsonVar::kObjectNode && !lhs->hasKey(lhs->objectNode_.second))
+        if (lhs->type_ == JsonVar::kObjectNode)
         {
             lhs->objectNode_.first.object_.insert({lhs->objectNode_.second,JsonVar()});
         }
