@@ -24,7 +24,12 @@ public:
 
         if (lhs->type_ == JsonVar::kObjectNode)
         {
-            lhs->objectNode_.first.object_.insert({lhs->objectNode_.second,JsonVar()});
+            auto& map = lhs->objectNode_.first.object_; // Access the map
+            const auto& key = lhs->objectNode_.second;  // Access the key 
+            
+            if (map.find(key) == map.end()) {
+                map.insert({key, JsonVar()});
+            }
         }
 
         JsonVar& lval = lhs->extractVal();
