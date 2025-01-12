@@ -19,12 +19,12 @@ all: clean compile
 object: $(OBJ_FILES)
 
 # Compile the 
-compile: $(INCLUDE) $(SRC)/json_dsl.c $(BIN)
-	gcc -g -I $(INCLUDE) src/**.c -o $(BIN)/parser.out
+compile: $(INCLUDE) $(SRC)/json_dsl.cpp $(BIN)
+	g++ -I $(INCLUDE) $(SRC)/**.cpp -o $(BIN)/test -std=c++11
 
 # Compile each source file into its object file individually
 $(BUILD_DIR)/%.o: $(SRC)/%.c | $(BUILD_DIR)
-	gcc -I $(INCLUDE) -c $< -o $@
+	g++ -I $(INCLUDE) -c $< -o $@
 
 ##########################################################################################
 #	UTILITIES
