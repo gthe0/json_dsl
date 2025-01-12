@@ -32,9 +32,9 @@
 #define PRINT       ;jsonlang::JsonVarPrinter::getInstance(),
 #define ERASE       ;jsonlang::JsonVarEraser::getInstance()=
 
-#define TYPE_OF(var)        jsonlang::JsonVar(static_cast<std::string>(var.typeOf()))
-#define SIZE_OF(var)        jsonlang::JsonVar(static_cast<double>(var.sizeOf()))
-#define IS_EMPTY(var)       jsonlang::JsonVar(var.isEmpty())
-#define HAS_KEY(var, key)   jsonlang::JsonVar(var.hasKey(key))
+#define TYPE_OF(var)        jsonlang::JsonVar(static_cast<std::string>(jsonlang::JsonVar_typeOf(var)))
+#define SIZE_OF(var)        jsonlang::JsonVar(static_cast<double>(jsonlang::JsonVar_sizeOf(var)))
+#define IS_EMPTY(var)       jsonlang::JsonVar(jsonlang::JsonVar_isEmpty(var))
+#define HAS_KEY(var, key)   jsonlang::JsonVar(jsonlang::JsonVar_hasKey(var, key))
 
 #endif //! JSONLANG_HPP

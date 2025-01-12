@@ -641,6 +641,26 @@ private:
     
 };
 
+inline std::string JsonVar_typeOf(JsonVar var)
+{
+    return var.typeOf();
+}
+
+inline double JsonVar_sizeOf(JsonVar var)
+{
+    return var.sizeOf();
+}
+
+inline bool JsonVar_isEmpty(JsonVar var)
+{
+    return var.isEmpty();
+}
+
+inline bool JsonVar_hasKey(JsonVar var,std::string key)
+{
+    return var.hasKey(key);
+}
+
 
 } // namespace jsonlang
 

@@ -24,6 +24,7 @@ PROGRAM_BEGIN
     PRINT obj6
     PRINT STRING("\n\n"), obj8
 
+    PRINT TYPE_OF(NULL)
     PRINT NULL
     PRINT SIZE_OF(obj0["key2"])
 
@@ -41,6 +42,7 @@ PROGRAM_BEGIN
 
     SET array["key"] APPEND NUMBER(4), NUMBER(5), NUMBER(5),obj5
     PRINT array, STRING("\n\n")
+    PRINT HAS_KEY(array, "key"), STRING("\n\n")
     SET array["key"][4] APPEND NUMBER(4), NUMBER(5), NUMBER(5), obj5, obj5, NUMBER(5)
     
     PRINT array, STRING("\n\n")
