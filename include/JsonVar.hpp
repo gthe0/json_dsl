@@ -375,11 +375,15 @@ public:
             {
                 result = "{ ";
 
-                for (auto &pair_ : object_)
+                for (auto it = object_.begin(); it != object_.end(); ++it) 
                 {
-                    result += "\"" + pair_.first + "\": " + pair_.second.toString() + ", ";
-                }
+                    result += "\"" + it->first + "\": " + it->second.toString();
 
+                    if (it != std::prev(object_.end()))
+                    {
+                        result += ", ";
+                    } 
+                }
                 result += " }";
                 break;
             }
@@ -413,9 +417,10 @@ public:
     // Return the type of the variable
     JsonString typeOf()
     {
+        const JsonVar& lval = extractVal();
         std::string result;
 
-        switch (type_)
+        switch (lval.type_)
         {
         case kNumber:       result = "number";  break;
         case kString:       result = "string"; break;
@@ -432,23 +437,29 @@ public:
     // Returns whether a key is found in an object
     bool hasKey(std::string Key)
     {
-        if (type_ != JsonVar::kObject)  return false;
-        return (object_.find(Key) != object_.end());
+        const JsonVar& lval = extract();
+        
+        if (lval.type_ != JsonVar::kObject)  return false;
+        return (lval.object_.find(Key) != lval.object_.end());
     }
     
     // Checks whether an array or an object is empty
     bool isEmpty()
     {
-        if (type_ == JsonVar::kObject)          return  (object_.empty());
-        if (type_ == JsonVar::kArray)           return  (array_.empty());
+        const JsonVar& lval = extractVal();
+
+        if (lval.type_ == JsonVar::kObject)          return  (lval.object_.empty());
+        if (lval.type_ == JsonVar::kArray)           return  (lval.array_.empty());
             
         return (false);
     }
 
     size_t sizeOf()
     {
-        if (type_ == kObject) return (object_.size());
-        if (type_ == kArray)  return (array_.size());
+        const JsonVar& lval = extractVal();
+
+        if (lval.type_ == kObject) return (lval.object_.size());
+        if (lval.type_ == kArray)  return (lval.array_.size());
             
         return (1);
     }
@@ -606,6 +617,33 @@ private:
 
         arrayNode_.first.array_ = std::move(newVec);
     }
+
+        JsonVar &extract() const {
+
+        // If it's a Node, we need to extract it first
+        if (type_ == kArrayNode)
+        {
+            if (arrayNode_.second >= arrayNode_.first.array_.size() || 0 > arrayNode_.second)
+            {
+                throw std::runtime_error("Array out of bounds");
+            }
+
+            return arrayNode_.first.array_[arrayNode_.second];
+        } 
+        else if (type_ == kObjectNode) 
+        {
+            auto it = objectNode_.first.object_.find(objectNode_.second);
+            if (it == objectNode_.first.object_.end()) 
+            {
+                return *(JsonVar*)this;
+            }
+
+            return it->second;
+        }
+
+        return *(JsonVar*)this;
+    }
+
 };
 
 

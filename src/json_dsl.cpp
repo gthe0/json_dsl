@@ -5,7 +5,7 @@ PROGRAM_BEGIN
     JSON(obj0) = OBJECT {
         KEY(key)  : STRING("Hello"),
         KEY(key1) : STRING("WORLD"),
-        KEY(key2) : OBJECT{ KEY(key1):NUMBER(2)}
+        KEY(key2) : OBJECT{ KEY(key1):NUMBER(2), KEY(key2):NUMBER(2)}
     }
 
     JSON(obj1) = OBJECT {KEY(key)  : STRING("Hello")}
@@ -23,6 +23,8 @@ PROGRAM_BEGIN
     PRINT obj5, STRING("\n\n")
     PRINT obj6
     PRINT STRING("\n\n"), obj8
+
+    PRINT SIZE_OF(obj0["key2"])
 
     PRINT STRING("\n"), obj5, STRING("\n\n")
 
