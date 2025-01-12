@@ -49,7 +49,10 @@ PROGRAM_BEGIN
     PRINT array, STRING("\n\n"), NULL
 
     JSON(obj22) = ARRAY[NULL,NUMBER(1)] + ARRAY[NUMBER(1),NULL, STRING("HELLO WORLD")]
-    ERASE obj22[4]
+        PRINT obj22, STRING("\n")
+
+        ERASE obj22[4]
+        PRINT obj0, STRING("\n")
 
     PRINT obj5, STRING("\n\n")
     PRINT obj0, STRING("\n")

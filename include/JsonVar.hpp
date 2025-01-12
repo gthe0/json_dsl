@@ -660,15 +660,15 @@ private:
             throw std::runtime_error("This function can only be used with an Array Node!");
         }
 
-        if (arrayNode_.second < 0 || arrayNode_.second >= arrayNode_.first.sizeOf())
+        if (arrayNode_.second < 0 || arrayNode_.second >= arrayNode_.first.array_.size())
         {
             throw std::runtime_error("Array out of bounds");
         }
 
         std::vector<JsonVar> newVec;
-        newVec.reserve(arrayNode_.first.sizeOf() - 1);
+        newVec.reserve(arrayNode_.first.array_.size() - 1);
 
-        for (size_t i = 0; i < arrayNode_.first.sizeOf(); ++i)
+        for (size_t i = 0; i < arrayNode_.first.array_.size(); ++i)
         {
             if (i != arrayNode_.second) newVec.push_back(arrayNode_.first.array_[i]);
         }
